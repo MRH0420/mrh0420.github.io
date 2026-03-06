@@ -1,0 +1,45 @@
+# --- 依赖与包管理器 ---
+node_modules/
+.pnpm-debug.log*
+
+# --- 构建产物 (Build Output) ---
+dist/
+_astro/
+docs/
+# 如果你使用了 Pagefind 搜索插件，通常索引会生成在这里
+public/pagefind/
+
+# --- 缓存与临时文件 ---
+.astro/
+.cache/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# --- 环境配置文件 (隐私安全) ---
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+
+# --- 操作系统文件 ---
+.DS_Store
+Thumbs.db
+*.swp
+
+# --- 开发工具配置 ---
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# --- 各种日志 ---
+logs
+*.log
