@@ -17,10 +17,10 @@ export const siteConfig: SiteConfig = {
 	},
 	banner: {
 		enable: true,
-		src: "assets/images/BannerA1.png", // Relative to the /src directory. Relative to the /public directory if it starts with '/'
+		src: "assets/images/Suwa_lake.png", // Relative to the /src directory. Relative to the /public directory if it starts with '/'
 		position: "center",
 		credit: {
-			enable: true, // Display the credit text of the banner image
+			enable: false, // Display the credit text of the banner image
 			text: "祥子与睦的轮舞", // Credit text to be displayed
 			url: "https://www.pixiv.net/artworks/135029138", // (Optional) URL link to the original artwork or artist's page
 		},

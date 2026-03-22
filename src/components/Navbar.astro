@@ -1,9 +1,10 @@
 ---
 import { Icon } from "astro-icon/components";
+import logoImage from "@assets/images/logo3.png";
 import { navBarConfig, siteConfig } from "../config";
 import { LinkPresets } from "../constants/link-presets";
 import { LinkPreset, type NavBarLink } from "../types/config";
-import { url } from "../utils/url-utils";
+import { pathsEqual, url } from "../utils/url-utils";
 import LightDarkSwitch from "./LightDarkSwitch.svelte";
 import Search from "./Search.svelte";
 import DisplaySettings from "./widget/DisplaySettings.svelte";
@@ -19,26 +20,35 @@ let links: NavBarLink[] = navBarConfig.links.map(
 		return item;
 	},
 );
+
+const currentPath = Astro.url.pathname;
 ---
 <div id="navbar" class="z-50 onload-animation">
     <div class="absolute h-8 left-0 right-0 -top-8 bg-[var(--card-bg)] transition"></div> <!-- used for onload animation -->
-    <div class:list={[
+    <nav aria-label="Primary" class:list={[
         className,
-        "card-base !bg-[oklch(from_var(--card-bg)_l_c_h_/_0.5)] backdrop-blur-md !overflow-visible max-w-[var(--page-width)] h-[4.5rem] !rounded-t-none mx-auto flex items-center justify-between px-4"]}>
-        <a href={url('/')} class="btn-plain scale-animation rounded-lg h-[3.25rem] px-5 font-bold active:scale-95">
-            <div class="flex flex-row text-[var(--primary)] items-center text-md">
+        "card-base !bg-[oklch(from_var(--card-bg-solid)_l_c_h_/_0.62)] !overflow-visible max-w-[var(--page-width)] min-h-[4.5rem] !rounded-t-none mx-auto flex items-center justify-between gap-2 px-3 md:px-4"]}>
+        <a href={url('/')} aria-label={`Go to ${siteConfig.title} home`} class="btn-plain scale-animation rounded-xl h-[3.25rem] px-3 md:px-4 font-bold active:scale-95">
+            <div class="flex flex-row items-center text-base tracking-[0.01em] text-[var(--primary)]">
                 <img 
-                    src="/src/assets/images/logo3.png" 
-                    alt="Home Icon" 
-                    class="w-[2.25rem] h-[2.25rem] object-cover rounded-md mb-1 mr-2" 
+                    src={logoImage.src}
+                    alt=""
+                    class="w-[2.4rem] h-[2.4rem] object-cover rounded-xl mr-2 shadow-sm" 
                 />
-                {siteConfig.title}
+                <span class="hidden sm:inline">{siteConfig.title}</span>
             </div>
         </a>
-        <div class="hidden md:flex">
+        <div class="hidden md:flex items-center gap-1">
             {links.map((l) => {
-                return <a aria-label={l.name} href={l.external ? l.url : url(l.url)} target={l.external ? "_blank" : null}
-                          class="btn-plain scale-animation rounded-lg h-11 font-bold px-5 active:scale-95"
+                const href = l.external ? l.url : url(l.url);
+                const isCurrent = !l.external && pathsEqual(currentPath, href);
+                return <a aria-label={l.name} href={href} target={l.external ? "_blank" : null}
+                          data-nav-link={!l.external ? "true" : null}
+                          data-nav-href={!l.external ? href : null}
+                          aria-current={isCurrent ? "page" : null}
+                          class:list={["btn-plain scale-animation rounded-xl h-11 font-bold px-4 active:scale-95", {
+                              "bg-[var(--surface-tint)] text-[var(--primary)]": isCurrent,
+                          }]}
                 >
                     <div class="flex items-center">
                         {l.name}
@@ -47,22 +57,22 @@ let links: NavBarLink[] = navBarConfig.links.map(
                 </a>;
             })}
         </div>
-        <div class="flex">
+        <div class="flex items-center gap-1">
             <!--<SearchPanel client:load>-->
             <Search client:only="svelte"></Search>
             {!siteConfig.themeColor.fixed && (
-                    <button aria-label="Display Settings" class="btn-plain scale-animation rounded-lg h-11 w-11 active:scale-90" id="display-settings-switch">
+                    <button type="button" aria-label="Display Settings" aria-haspopup="dialog" aria-controls="display-setting" aria-expanded="false" class="btn-plain scale-animation rounded-xl h-11 w-11 active:scale-90" id="display-settings-switch">
                         <Icon name="material-symbols:palette-outline" class="text-[1.25rem]"></Icon>
                     </button>
             )}
             <LightDarkSwitch client:only="svelte"></LightDarkSwitch>
-            <button aria-label="Menu" name="Nav Menu" class="btn-plain scale-animation rounded-lg w-11 h-11 active:scale-90 md:!hidden" id="nav-menu-switch">
+            <button type="button" aria-label="Menu" aria-haspopup="menu" aria-controls="nav-menu-panel" aria-expanded="false" name="Nav Menu" class="btn-plain scale-animation rounded-xl w-11 h-11 active:scale-90 md:!hidden" id="nav-menu-switch">
                 <Icon name="material-symbols:menu-rounded" class="text-[1.25rem]"></Icon>
             </button>
         </div>
         <NavMenuPanel links={links}></NavMenuPanel>
         <DisplaySettings client:only="svelte"></DisplaySettings>
-    </div>
+    </nav>
 </div>
 
 <script>
@@ -74,6 +84,43 @@ function switchTheme() {
         document.documentElement.classList.add('dark');
         localStorage.theme = 'dark';
     }
+}
+
+function updateActiveNavState(nextHref: string) {
+    const navLinks = document.querySelectorAll('[data-nav-link="true"]');
+    for (const navLink of navLinks) {
+        const href = navLink.getAttribute("data-nav-href");
+        const isActive = href === nextHref;
+        navLink.classList.toggle("bg-[var(--surface-tint)]", isActive);
+        navLink.classList.toggle("text-[var(--primary)]", isActive);
+        if (isActive) {
+            navLink.setAttribute("aria-current", "page");
+        } else {
+            navLink.removeAttribute("aria-current");
+        }
+    }
+}
+
+function loadNavScript() {
+    const navLinks = document.querySelectorAll('[data-nav-link="true"]');
+    for (const navLink of navLinks) {
+        navLink.addEventListener("click", () => {
+            const href = navLink.getAttribute("data-nav-href");
+            if (href) {
+                updateActiveNavState(href);
+            }
+        });
+    }
+
+    const swup = window.swup;
+    if (swup?.hooks) {
+        swup.hooks.off?.("page:view", syncNavStateWithLocation);
+        swup.hooks.on("page:view", syncNavStateWithLocation);
+    }
+}
+
+function syncNavStateWithLocation() {
+    updateActiveNavState(window.location.pathname);
 }
 
 function loadButtonScript() {
@@ -90,6 +137,8 @@ function loadButtonScript() {
             let settingPanel = document.getElementById("display-setting");
             if (settingPanel) {
                 settingPanel.classList.toggle("float-panel-closed");
+                const expanded = !settingPanel.classList.contains("float-panel-closed");
+                settingBtn.setAttribute("aria-expanded", String(expanded));
             }
         };
     }
@@ -100,12 +149,16 @@ function loadButtonScript() {
             let menuPanel = document.getElementById("nav-menu-panel");
             if (menuPanel) {
                 menuPanel.classList.toggle("float-panel-closed");
+                const expanded = !menuPanel.classList.contains("float-panel-closed");
+                menuBtn.setAttribute("aria-expanded", String(expanded));
             }
         };
     }
 }
 
 loadButtonScript();
+loadNavScript();
+syncNavStateWithLocation();
 </script>
 
 {import.meta.env.PROD && <script is:inline define:vars={{scriptUrl: url('/pagefind/pagefind.js')}}>

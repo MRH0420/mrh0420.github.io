@@ -2,6 +2,8 @@
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
+import { Image } from "astro:assets";
+import wallpaperImage from "@assets/images/115293810_p0.png";
 
 import ConfigCarrier from "@components/ConfigCarrier.astro";
 import { profileConfig, siteConfig } from "@/config";
@@ -68,12 +70,13 @@ const bannerOffsetByPosition = {
 	center: `${BANNER_HEIGHT_EXTEND / 2}vh`,
 	bottom: "0",
 };
-const bannerOffset =
-	bannerOffsetByPosition[siteConfig.banner.position || "center"];
+const bannerPosition =
+	(siteConfig.banner.position || "center") as keyof typeof bannerOffsetByPosition;
+const bannerOffset = bannerOffsetByPosition[bannerPosition];
 ---
 
 <!DOCTYPE html>
-<html lang={siteLang} class="bg-[var(--page-bg)] transition text-[14px] md:text-[16px]"
+<html lang={siteLang} class="bg-[var(--page-bg)] transition text-[15px] md:text-[16px]"
 	  data-overlayscrollbars-initialize
 >
 	<head>
@@ -148,13 +151,22 @@ const bannerOffset =
 		<link rel="alternate" type="application/rss+xml" title={profileConfig.name} href={`${Astro.site}rss.xml`}/>
 
 	</head>
-	<body class=" min-h-screen transition " class:list={[{"lg:is-home": isHomePage, "enable-banner": enableBanner}]}
+	<body class="min-h-screen transition selection:text-[var(--text-main)]" class:list={[{"lg:is-home": isHomePage, "enable-banner": enableBanner}]}
 		  data-overlayscrollbars-initialize
 	>
 		<!-- Background -->
 		<div id="wallpaper-layer" class="fixed inset-0 -z-20 overflow-hidden pointer-events-none">
-			<img src="/src/assets/images/115293810_p0.png" class="w-full h-full object-cover" />
-			<div id="wallpaper-overlay" class="absolute inset-0 bg-black/50 backdrop-blur-2xl"></div>
+			<Image
+				src={wallpaperImage}
+				alt=""
+				widths={[768, 1280, 1600, 1920]}
+				sizes="100vw"
+				loading="eager"
+				decoding="async"
+				fetchpriority="high"
+				class="w-full h-full object-cover object-center scale-[1.03]"
+			/>
+			<div id="wallpaper-overlay" class="absolute inset-0 bg-[linear-gradient(180deg,rgba(15,23,42,0.28)_0%,rgba(15,23,42,0.46)_100%)] backdrop-blur-[28px]"></div>
 		</div> 
 		
 		<ConfigCarrier></ConfigCarrier>
@@ -276,6 +288,15 @@ function setClickOutsideToClose(panel: string, ignores: string[]) {
 			}
 		}
 		panelDom!.classList.add("float-panel-closed");
+		if (panel === "display-setting") {
+			document.getElementById("display-settings-switch")?.setAttribute("aria-expanded", "false");
+		}
+		if (panel === "nav-menu-panel") {
+			document.getElementById("nav-menu-switch")?.setAttribute("aria-expanded", "false");
+		}
+		if (panel === "search-panel") {
+			document.getElementById("search-switch")?.setAttribute("aria-expanded", "false");
+		}
 	});
 }
 setClickOutsideToClose("display-setting", ["display-setting", "display-settings-switch"])
@@ -505,7 +526,7 @@ function scrollFunction() {
         
         // 应用样式
         overlay.style.backdropFilter = `blur(${blur}px)`;
-        overlay.style.webkitBackdropFilter = `blur(${blur}px)`; // 适配 Safari
+        (overlay.style as CSSStyleDeclaration & { webkitBackdropFilter?: string }).webkitBackdropFilter = `blur(${blur}px)`; // 适配 Safari
         overlay.style.backgroundColor = `rgba(0, 0, 0, ${opacity})`;
     }
     // ------------------

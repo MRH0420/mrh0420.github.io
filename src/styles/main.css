@@ -2,7 +2,7 @@
 
 @layer components {
     .card-base {
-        @apply rounded-[var(--radius-large)] overflow-hidden bg-[oklch(from_var(--card-bg)_l_c_h_/_0.7)] transition;
+        @apply rounded-[var(--radius-card)] overflow-hidden transition border border-[var(--card-border)] bg-[oklch(from_var(--card-bg-solid)_l_c_h_/_0.78)] shadow-[var(--shadow-card)] backdrop-blur-xl;
     }
     h1, h2, h3, h4, h5, h6, p, a, span, li, ul, ol, blockquote, code, pre, table, th, td, strong {
         @apply transition;
@@ -21,7 +21,7 @@
         @apply transition rounded-md p-1.5 -m-1.5 expand-animation;
     }
     .float-panel {
-        @apply top-[5.25rem] rounded-[var(--radius-large)] overflow-hidden bg-[var(--float-panel-bg)] transition shadow-xl dark:shadow-none
+        @apply top-[5.25rem] rounded-[var(--radius-card)] overflow-hidden border border-[var(--card-border)] bg-[oklch(from_var(--float-panel-bg)_l_c_h_/_0.9)] transition shadow-[var(--shadow-card)] backdrop-blur-xl dark:shadow-none
     }
     .float-panel-closed {
         @apply -translate-y-1 opacity-0 pointer-events-none
@@ -31,7 +31,7 @@
     }
 
     .btn-card {
-        @apply transition flex items-center justify-center bg-[var(--card-bg)] hover:bg-[var(--btn-card-bg-hover)]
+        @apply transition flex items-center justify-center border border-transparent bg-[var(--card-bg-elevated)] hover:border-[var(--card-border)] hover:bg-[var(--btn-card-bg-hover)]
         active:bg-[var(--btn-card-bg-active)]
     }
     .btn-card.disabled {
@@ -39,7 +39,7 @@
     }
     .btn-plain {
         @apply transition relative flex items-center justify-center bg-none
-        text-black/75 hover:text-[var(--primary)] dark:text-white/75 dark:hover:text-[var(--primary)];
+        text-[var(--text-secondary)] hover:text-[var(--primary)] dark:text-[var(--text-secondary)] dark:hover:text-[var(--primary)];
         &:not(.scale-animation) {
             @apply hover:bg-[var(--btn-plain-bg-hover)] active:bg-[var(--btn-plain-bg-active)]
         }
@@ -78,13 +78,13 @@
     }
 
     .text-90 {
-        @apply text-black/90 dark:text-white/90
+        color: var(--text-main);
     }
     .text-75 {
-        @apply text-black/75 dark:text-white/75
+        color: var(--text-secondary);
     }
     .text-50 {
-        @apply text-black/50 dark:text-white/50
+        color: var(--text-tertiary);
     }
     .text-30 {
         @apply text-black/30 dark:text-white/30
@@ -109,6 +109,61 @@
     }
     .btn-regular-dark.success {
         @apply bg-[oklch(0.75_0.14_var(--hue))] dark:bg-[oklch(0.75_0.14_var(--hue))]
+    }
+}
+
+html {
+    color: var(--text-main);
+    background:
+        radial-gradient(circle at top, var(--surface-tint) 0, transparent 32rem),
+        linear-gradient(180deg, var(--page-gradient-start), var(--page-gradient-end));
+    scroll-behavior: smooth;
+}
+
+body {
+    color: var(--text-main);
+    line-height: 1.65;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--text-main);
+    text-wrap: balance;
+}
+
+p, li, dd, dt {
+    color: var(--text-secondary);
+}
+
+a, button, input, textarea, summary, [role="button"], [tabindex] {
+    transition-duration: 180ms;
+    transition-timing-function: var(--ease-spring);
+}
+
+:focus-visible {
+    outline: 2px solid var(--focus-outline);
+    outline-offset: 2px;
+    box-shadow: var(--focus-ring);
+}
+
+button:focus-visible,
+[role="button"]:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+a:focus-visible {
+    border-radius: 0.875rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
     }
 }
 
@@ -150,4 +205,3 @@
     }
   }
 }
-
