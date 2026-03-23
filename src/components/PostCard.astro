@@ -46,7 +46,8 @@ const { remarkPluginFrontmatter } = await entry.render();
 	class:list={[
 		"post-card group card-base relative grid w-full overflow-hidden border-0 !bg-[oklch(from_var(--card-bg-solid)_l_c_h_/_0.7)] backdrop-blur-lg hover:-translate-y-1 hover:shadow-[var(--shadow-card-hover)]",
 		{
-			"md:min-h-[13rem] md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]": hasCover,
+			"md:min-h-[13rem] md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]": hasCover && imageOnLeft,
+			"md:min-h-[13rem] md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]": hasCover && !imageOnLeft,
 		},
 		className,
 	]}

@@ -3,6 +3,7 @@ import BackToTop from "@components/control/BackToTop.astro";
 import Footer from "@components/Footer.astro";
 import Navbar from "@components/Navbar.astro";
 import SideBar from "@components/widget/SideBar.astro";
+import WaveDivider from "@components/WaveDivider.astro";
 import type { MarkdownHeading } from "astro";
 import { Icon } from "astro-icon/components";
 import ImageWrapper from "../components/misc/ImageWrapper.astro";
@@ -11,7 +12,6 @@ import { siteConfig } from "../config";
 import {
 	BANNER_HEIGHT,
 	BANNER_HEIGHT_EXTEND,
-	MAIN_PANEL_OVERLAPS_BANNER_HEIGHT,
 } from "../constants/constants";
 import Layout from "./Layout.astro";
 
@@ -37,7 +37,7 @@ const hasBannerCredit =
 const hasBannerLink = !!siteConfig.banner.credit.url;
 
 const mainPanelTop = siteConfig.banner.enable
-	? `calc(${BANNER_HEIGHT}vh - ${MAIN_PANEL_OVERLAPS_BANNER_HEIGHT}rem)`
+	? `${BANNER_HEIGHT}vh`
 	: "5.5rem";
 ---
 
@@ -61,10 +61,11 @@ const mainPanelTop = siteConfig.banner.enable
                   fetchpriority="high"
     >
     </ImageWrapper>
+    <WaveDivider class="z-20 h-[4rem] md:h-[5rem]" opacity={0.9} reactive={true} />
 </div>}
 
 <!-- Main content -->
-<div class="absolute w-full z-30 pointer-events-none" style={`top: ${mainPanelTop}`}>
+<div id="main-content-shell" class="absolute w-full z-30 pointer-events-none" style={`top: ${mainPanelTop}`}>
     <!-- The pointer-events-none here prevent blocking the click event of the TOC -->
     <div class="relative max-w-[var(--page-width)] mx-auto pointer-events-auto">
         <div id="main-grid" class="transition duration-700 w-full left-0 right-0 grid grid-cols-1 lg:grid-cols-[17.5rem_minmax(0,1fr)] grid-rows-[auto_1fr_auto] lg:grid-rows-[auto]

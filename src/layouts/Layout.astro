@@ -5,6 +5,7 @@ import "@fontsource/roboto/700.css";
 
 import ConfigCarrier from "@components/ConfigCarrier.astro";
 import ClickEffect from "@components/ClickEffect.astro";
+import WaveDivider from "@components/WaveDivider.astro";
 import { profileConfig, siteConfig } from "@/config";
 import {
 	AUTO_MODE,
@@ -182,6 +183,7 @@ const wallpaperUrl =
 					style={`background-image: url('${wallpaperUrl}');`}
 				></div>
 				<div id="wallpaper-overlay" class="absolute inset-0 bg-[linear-gradient(180deg,rgba(15,23,42,0.28)_0%,rgba(15,23,42,0.46)_100%)] backdrop-blur-[28px]"></div>
+				<WaveDivider class="h-[4.25rem] opacity-80" flip={true} opacity={0.72} />
 			</div>
 		)}
 		
@@ -227,6 +229,40 @@ const wallpaperUrl =
 		@apply opacity-0 -translate-y-16
 	}
 }
+
+@media (max-width: 768px) {
+	.enable-banner.is-home #banner-wrapper,
+	.enable-banner #banner-wrapper {
+		height: calc(var(--banner-height-home) + 8rem);
+	}
+
+	.enable-banner.is-home #banner,
+	.enable-banner #banner {
+		height: calc(var(--banner-height-home) + 8rem);
+	}
+
+	.enable-banner #top-row {
+		height: calc(var(--banner-height-home) + 8rem - 4.5rem);
+	}
+
+	.enable-banner #main-content-shell {
+		top: calc(30vh + 8rem) !important;
+	}
+}
+
+.waves > .parallax use {
+	animation: wave 25s cubic-bezier(0.5, 0.5, 0.45, 0.5) infinite;
+	will-change: transform;
+}
+
+@keyframes wave {
+	0% {
+		transform: translate3d(-90px, 0, 0);
+	}
+	100% {
+		transform: translate3d(85px, 0, 0);
+	}
+}
 </style>
 
 <script>
@@ -242,8 +278,7 @@ import {pathsEqual, url} from "../utils/url-utils";
 import {
 	BANNER_HEIGHT,
 	BANNER_HEIGHT_HOME,
-	BANNER_HEIGHT_EXTEND,
-	MAIN_PANEL_OVERLAPS_BANNER_HEIGHT
+	BANNER_HEIGHT_EXTEND
 } from "../constants/constants";
 import { siteConfig } from '../config';
 
@@ -540,15 +575,28 @@ function scrollFunction() {
 		}
 	}
 
+	if (bannerEnabled) {
+		const rootStyle = document.documentElement.style;
+		const ratio = Math.min(scrollY / bannerHeight, 1);
+		const fastFadeRatio = Math.min(ratio * 1.45, 1);
+
+		// Keep the contact edge near the banner stable, but let the lower veil fade faster than the wallpaper.
+		rootStyle.setProperty('--wave-mask-mid', `${Math.max(0.12, 0.42 - fastFadeRatio * 0.28)}`);
+		rootStyle.setProperty('--wave-mask-bottom', `${Math.max(0.02, 0.22 - fastFadeRatio * 0.2)}`);
+		rootStyle.setProperty('--wave-mask-glow', `${Math.max(0.03, 0.22 - fastFadeRatio * 0.17)}`);
+	}
+
 	if (navbar) {
 		const NAVBAR_HEIGHT = 72
-		const MAIN_PANEL_EXCESS_HEIGHT = MAIN_PANEL_OVERLAPS_BANNER_HEIGHT * 16			// The height the main panel overlaps the banner
 
 		let bannerHeight = BANNER_HEIGHT
 		if (document.body.classList.contains('lg:is-home') && window.innerWidth >= 1024) {
 			bannerHeight = BANNER_HEIGHT_HOME
 		}
-		let threshold = window.innerHeight * (bannerHeight / 100) - NAVBAR_HEIGHT - MAIN_PANEL_EXCESS_HEIGHT - 16
+		let threshold = window.innerHeight * (bannerHeight / 100) - NAVBAR_HEIGHT - 16
+		if (window.innerWidth <= 768) {
+			threshold += 8 * 16
+		}
 		if (document.body.scrollTop >= threshold || document.documentElement.scrollTop >= threshold) {
 			navbar.classList.add('navbar-hidden')
 		} else {
@@ -557,6 +605,7 @@ function scrollFunction() {
 	}
 }
 window.onscroll = scrollFunction
+scrollFunction()
 
 window.onresize = () => {
 	// calculate the --banner-height-extend, which needs to be a multiple of 4 to avoid blurry text
