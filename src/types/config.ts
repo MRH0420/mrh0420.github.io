@@ -20,6 +20,14 @@ export type SiteConfig = {
 		hue: number;
 		fixed: boolean;
 	};
+	theme: {
+		toggleable: boolean;
+		mode: LIGHT_DARK_MODE;
+	};
+	wallpaper: {
+		enable: boolean;
+		src: string;
+	};
 	banner: {
 		enable: boolean;
 		src: string;
@@ -36,6 +44,12 @@ export type SiteConfig = {
 	};
 
 	favicon: Favicon[];
+	backToTop: {
+		image: {
+			enable: boolean;
+			src: string;
+		};
+	};
 };
 
 export type Favicon = {

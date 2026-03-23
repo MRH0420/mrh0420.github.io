@@ -2,8 +2,6 @@
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
-import { Image } from "astro:assets";
-import wallpaperImage from "@assets/images/115293810_p0.png";
 
 import ConfigCarrier from "@components/ConfigCarrier.astro";
 import { profileConfig, siteConfig } from "@/config";
@@ -40,6 +38,8 @@ const isHomePage = pathsEqual(Astro.url.pathname, url("/"));
 // defines global css variables
 // why doing this in Layout instead of GlobalStyles: https://github.com/withastro/astro/issues/6728#issuecomment-1502203757
 const configHue = siteConfig.themeColor.hue;
+const themeToggleable = siteConfig.theme.toggleable;
+const configuredThemeMode = siteConfig.theme.mode;
 if (!banner || typeof banner !== "string" || banner.trim() === "") {
 	banner = siteConfig.banner.src;
 }
@@ -73,6 +73,23 @@ const bannerOffsetByPosition = {
 const bannerPosition =
 	(siteConfig.banner.position || "center") as keyof typeof bannerOffsetByPosition;
 const bannerOffset = bannerOffsetByPosition[bannerPosition];
+
+// Resolve wallpaper paths from src/assets so the image can still be configured with a plain string in config.ts.
+type WallpaperAsset = {
+	src: string;
+};
+
+const wallpaperModules = import.meta.glob<WallpaperAsset>("../assets/**/*", {
+	eager: true,
+	import: "default",
+});
+const wallpaperImage = siteConfig.wallpaper.enable
+	? siteConfig.wallpaper.src.startsWith("/")
+		? siteConfig.wallpaper.src
+		: wallpaperModules[`../${siteConfig.wallpaper.src}`]
+	: undefined;
+const wallpaperUrl =
+	typeof wallpaperImage === "string" ? wallpaperImage : wallpaperImage?.src;
 ---
 
 <!DOCTYPE html>
@@ -113,9 +130,11 @@ const bannerOffset = bannerOffsetByPosition[bannerPosition];
 		))}
 
 		<!-- Set the theme before the page is rendered to avoid a flash -->
-		<script is:inline define:vars={{DEFAULT_THEME, LIGHT_MODE, DARK_MODE, AUTO_MODE, BANNER_HEIGHT_EXTEND, PAGE_WIDTH, configHue}}>
-			// Load the theme from local storage
-			const theme = localStorage.getItem('theme') || DEFAULT_THEME;
+		<script is:inline define:vars={{DEFAULT_THEME, LIGHT_MODE, DARK_MODE, AUTO_MODE, BANNER_HEIGHT_EXTEND, PAGE_WIDTH, configHue, themeToggleable, configuredThemeMode}}>
+			// Respect the config when theme switching is disabled, otherwise restore the visitor preference.
+			const theme = themeToggleable
+				? localStorage.getItem('theme') || DEFAULT_THEME
+				: configuredThemeMode;
 			switch (theme) {
 				case LIGHT_MODE:
 					document.documentElement.classList.remove('dark');
@@ -155,19 +174,15 @@ const bannerOffset = bannerOffsetByPosition[bannerPosition];
 		  data-overlayscrollbars-initialize
 	>
 		<!-- Background -->
-		<div id="wallpaper-layer" class="fixed inset-0 -z-20 overflow-hidden pointer-events-none">
-			<Image
-				src={wallpaperImage}
-				alt=""
-				widths={[768, 1280, 1600, 1920]}
-				sizes="100vw"
-				loading="eager"
-				decoding="async"
-				fetchpriority="high"
-				class="w-full h-full object-cover object-center scale-[1.03]"
-			/>
-			<div id="wallpaper-overlay" class="absolute inset-0 bg-[linear-gradient(180deg,rgba(15,23,42,0.28)_0%,rgba(15,23,42,0.46)_100%)] backdrop-blur-[28px]"></div>
-		</div> 
+		{siteConfig.wallpaper.enable && wallpaperUrl && (
+			<div id="wallpaper-layer" class="fixed inset-0 -z-20 overflow-hidden pointer-events-none">
+				<div
+					class="w-full h-full bg-cover bg-center scale-[1.03]"
+					style={`background-image: url('${wallpaperUrl}');`}
+				></div>
+				<div id="wallpaper-overlay" class="absolute inset-0 bg-[linear-gradient(180deg,rgba(15,23,42,0.28)_0%,rgba(15,23,42,0.46)_100%)] backdrop-blur-[28px]"></div>
+			</div>
+		)}
 		
 		<ConfigCarrier></ConfigCarrier>
 		<slot />
@@ -505,31 +520,23 @@ function scrollFunction() {
 
 	let scrollY = document.documentElement.scrollTop || document.body.scrollTop;
 
-    // --- 核心联动逻辑 ---
-    const overlay = document.getElementById('wallpaper-overlay');
-	if (!overlay) return;
-	if (!bannerEnabled){
-		// 如果 Banner 未启用，直接解除遮罩：无模糊、极低暗度
-        overlay.style.backdropFilter = 'blur(0px)';
-        (overlay.style as any).webkitBackdropFilter = 'blur(0px)';
-        overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.1)'; // 保留 0.1 保护文字可读性
-        return;
+	// Keep the wallpaper animation optional so the rest of the scroll behavior still works without a wallpaper.
+	const overlay = document.getElementById('wallpaper-overlay');
+	if (overlay) {
+		if (!bannerEnabled) {
+			overlay.style.backdropFilter = 'blur(0px)';
+			(overlay.style as CSSStyleDeclaration & { webkitBackdropFilter?: string }).webkitBackdropFilter = 'blur(0px)';
+			overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.1)';
+		} else {
+			const ratio = Math.min(scrollY / bannerHeight, 1);
+			const blur = 32 * (1 - ratio);
+			const opacity = 0.5 - (ratio * 0.4);
+
+			overlay.style.backdropFilter = `blur(${blur}px)`;
+			(overlay.style as CSSStyleDeclaration & { webkitBackdropFilter?: string }).webkitBackdropFilter = `blur(${blur}px)`;
+			overlay.style.backgroundColor = `rgba(0, 0, 0, ${opacity})`;
+		}
 	}
-    if (overlay) {
-        // 计算滚动比例 (0 为顶部，1 为 Banner 完全滚出)
-        const ratio = Math.min(scrollY / bannerHeight, 1); 
-        
-        // 1. 模糊度从 32px 线性减少到 0px
-        const blur = 32 * (1 - ratio);
-        // 2. 暗度从 0.5 (50%) 减少到 0.1 (10%，保留一点点暗度保护文字)
-        const opacity = 0.5 - (ratio * 0.4);
-        
-        // 应用样式
-        overlay.style.backdropFilter = `blur(${blur}px)`;
-        (overlay.style as CSSStyleDeclaration & { webkitBackdropFilter?: string }).webkitBackdropFilter = `blur(${blur}px)`; // 适配 Safari
-        overlay.style.backgroundColor = `rgba(0, 0, 0, ${opacity})`;
-    }
-    // ------------------
 
 	if (navbar) {
 		const NAVBAR_HEIGHT = 72

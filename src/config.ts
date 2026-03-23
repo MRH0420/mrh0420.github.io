@@ -15,9 +15,18 @@ export const siteConfig: SiteConfig = {
 		hue: 250, // Default hue for the theme color, from 0 to 360. e.g. red: 0, teal: 200, cyan: 250, pink: 345
 		fixed: true, // Hide the theme color picker for visitors
 	},
+	theme: {
+		toggleable: false, // Allow visitors to switch between light, dark, and system modes
+		mode: "dark", // When toggleable is false, the site will stay in this mode
+	},
+	wallpaper: {
+		enable: true, // Show the wallpaper layer behind the page content
+		src: "assets/images/115293810_p0.png", // Relative to the /src directory. Relative to the /public directory if it starts with '/'
+	},
 	banner: {
 		enable: true,
-		src: "assets/images/Suwa_lake.png", // Relative to the /src directory. Relative to the /public directory if it starts with '/'
+		src: "assets/images/BannerA1.png", // Relative to the /src directory. Relative to the /public directory if it starts with '/'
+		// src: '/assets/images/Suwa_lake.png',
 		position: "center",
 		credit: {
 			enable: false, // Display the credit text of the banner image
@@ -37,6 +46,12 @@ export const siteConfig: SiteConfig = {
 		//   sizes: '32x32',              // (Optional) Size of the favicon, set only if you have favicons of different sizes
 		// }
 	],
+	backToTop: {
+		image: {
+			enable: true, // Show the rotating image inside the back-to-top button
+			src: "assets/images/taichi.png", // Relative to the /src directory. Relative to the /public directory if it starts with '/'
+		},
+	},
 };
 
 export const navBarConfig: NavBarConfig = {
@@ -46,7 +61,7 @@ export const navBarConfig: NavBarConfig = {
 		LinkPreset.About,
 		{
 			name: "GitHub",
-			url: "https://github.com/saicaca/fuwari", // Internal links should not include the base path, as it is automatically added
+			url: "https://github.com/MRH0420", // Internal links should not include the base path, as it is automatically added
 			external: true, // Show an external link icon and will open in a new tab
 		},
 	],
@@ -55,24 +70,25 @@ export const navBarConfig: NavBarConfig = {
 export const profileConfig: ProfileConfig = {
 	avatar: "assets/images/Avt.jpg", // Relative to the /src directory. Relative to the /public directory if it starts with '/'
 	name: "Ruihao Ma",
-	bio: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+	bio: "Grade 11 @ Moonshot Academy | CS x Design | Project Builder | Creative Creator",
+	//bio: "PoPiPa PiPoPa PoPiPaPaPiPoPa!",
 	links: [
 		{
-			name: "Twitter",
-			icon: "fa6-brands:twitter", // Visit https://icones.js.org/ for icon codes
+			name: "Mail",
+			icon: "fa6-regular:envelope", // Visit https://icones.js.org/ for icon codes
 			// You will need to install the corresponding icon set if it's not already included
 			// `pnpm add @iconify-json/<icon-set-name>`
-			url: "https://twitter.com",
+			url: "mailto:mrh1766634751@gmail.com",
 		},
 		{
-			name: "Steam",
-			icon: "fa6-brands:steam",
-			url: "https://store.steampowered.com",
+			name: "Bilibili",
+			icon: "fa6-brands:bilibili",
+			url: "https://space.bilibili.com/3546592862800437",
 		},
 		{
 			name: "GitHub",
 			icon: "fa6-brands:github",
-			url: "https://github.com/saicaca/fuwari",
+			url: "https://github.com/MRH0420",
 		},
 	],
 };
