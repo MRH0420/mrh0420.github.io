@@ -41,3 +41,118 @@ document.addEventListener("click", function (e: MouseEvent) {
     }
 });
 </script>
+
+<script>
+	import { Infographic } from "@antv/infographic";
+
+	const infographicInstances = new WeakMap<HTMLElement, Infographic>();
+
+	function getInfographicPalette() {
+		const rootStyles = getComputedStyle(document.documentElement);
+		const hue = Number.parseFloat(rootStyles.getPropertyValue("--hue").trim() || "200");
+		const isDark = document.documentElement.classList.contains("dark");
+
+		return {
+			colorPrimary: `oklch(${isDark ? "0.76" : "0.68"} 0.14 ${hue})`,
+			colorBg: rootStyles.getPropertyValue("--card-bg-solid").trim(),
+			palette: [
+				`oklch(${isDark ? "0.76" : "0.68"} 0.14 ${hue})`,
+				`oklch(${isDark ? "0.82" : "0.73"} 0.12 ${(hue + 18) % 360})`,
+				`oklch(${isDark ? "0.8" : "0.72"} 0.11 ${(hue + 34) % 360})`,
+				`oklch(${isDark ? "0.78" : "0.7"} 0.13 ${(hue + 328) % 360})`,
+				`oklch(${isDark ? "0.84" : "0.75"} 0.1 ${(hue + 52) % 360})`,
+			],
+			textColor: rootStyles.getPropertyValue("--text-main").trim(),
+			textMuted: rootStyles.getPropertyValue("--text-secondary").trim(),
+		};
+	}
+
+	function decodeInfographicSource(value: string) {
+		try {
+			const bytes = Uint8Array.from(atob(value), (char) => char.charCodeAt(0));
+			return new TextDecoder().decode(bytes);
+		} catch {
+			return "";
+		}
+	}
+
+	function createInfographicShell(block: HTMLElement) {
+		if (block.dataset.infographicReady === "true") {
+			return block.querySelector(".infographic-stage");
+		}
+
+		const shell = document.createElement("div");
+		shell.className = "infographic-shell";
+
+		const badge = document.createElement("div");
+		badge.className = "infographic-badge";
+		badge.textContent = "Infographic";
+
+		const stage = document.createElement("div");
+		stage.className = "infographic-stage";
+
+		shell.append(badge, stage);
+		block.replaceChildren(shell);
+		block.dataset.infographicReady = "true";
+		return stage;
+	}
+
+	function renderInfographicBlock(block: HTMLElement) {
+		const source = decodeInfographicSource(
+			block.dataset.infographicSource || "",
+		).trim();
+		if (!source) {
+			return;
+		}
+
+		const stage = createInfographicShell(block);
+		if (!(stage instanceof HTMLElement)) {
+			return;
+		}
+
+		const palette = getInfographicPalette();
+		const existing = infographicInstances.get(block);
+		if (existing) {
+			existing.destroy();
+			infographicInstances.delete(block);
+		}
+
+		const infographic = new Infographic({
+			container: stage,
+			width: "100%",
+			height: "100%",
+			padding: 28,
+			editable: false,
+			themeConfig: {
+				colorPrimary: palette.colorPrimary,
+				colorBg: palette.colorBg,
+				palette: palette.palette,
+				base: {
+					text: {
+						fill: palette.textColor,
+						"font-family": "Roboto, sans-serif",
+					},
+				},
+				desc: {
+					fill: palette.textMuted,
+				},
+				stylize: null,
+			},
+			svg: {
+				background: false,
+			},
+		});
+		infographic.render(source);
+		infographicInstances.set(block, infographic);
+	}
+
+	function renderInfographics() {
+		document
+			.querySelectorAll<HTMLElement>(".infographic-block[data-infographic-source]")
+			.forEach(renderInfographicBlock);
+	}
+
+	renderInfographics();
+	document.addEventListener("astro:page-load", renderInfographics);
+	document.addEventListener("theme-change", renderInfographics);
+</script>

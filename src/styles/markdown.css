@@ -117,5 +117,30 @@
         overflow-x: auto;
         margin: 1em 0;
     }
+
+    .infographic-block {
+        @apply my-6;
+    }
+
+    .infographic-shell {
+        @apply overflow-hidden rounded-[1.25rem] border border-[var(--card-border)] bg-[oklch(from_var(--card-bg-solid)_l_c_h_/_0.82)] shadow-[var(--shadow-card)] backdrop-blur-xl;
+    }
+
+    .infographic-badge {
+        @apply inline-flex items-center rounded-full border border-[var(--card-border)] bg-[var(--btn-regular-bg)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--btn-content)];
+        margin: 1rem 1rem 0;
+    }
+
+    .infographic-stage {
+        @apply min-h-[20rem] w-full overflow-x-auto p-3 md:p-5;
+    }
+
+    .infographic-stage svg {
+        @apply h-auto w-full;
+    }
+
+    pre.mermaid {
+        @apply my-6 overflow-x-auto rounded-[1.25rem] border border-[var(--card-border)] bg-[oklch(from_var(--card-bg-solid)_l_c_h_/_0.82)] p-4 shadow-[var(--shadow-card)] backdrop-blur-xl md:p-6;
+    }
     
 }

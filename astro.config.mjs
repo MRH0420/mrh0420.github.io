@@ -5,6 +5,7 @@ import { pluginCollapsibleSections } from "@expressive-code/plugin-collapsible-s
 import { pluginLineNumbers } from "@expressive-code/plugin-line-numbers";
 import swup from "@swup/astro";
 import expressiveCode from "astro-expressive-code";
+import mermaid from "astro-mermaid";
 import icon from "astro-icon";
 import { defineConfig } from "astro/config";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
@@ -12,9 +13,11 @@ import rehypeComponents from "rehype-components"; /* Render the custom directive
 import rehypeKatex from "rehype-katex";
 import rehypeSlug from "rehype-slug";
 import remarkDirective from "remark-directive"; /* Handle directives */
+import remarkGfm from "remark-gfm";
 import remarkGithubAdmonitionsToDirectives from "remark-github-admonitions-to-directives";
 import remarkMath from "remark-math";
 import remarkSectionize from "remark-sectionize";
+import { remarkInfographic } from "./src/plugins/remark-infographic.mjs";
 import { expressiveCodeConfig } from "./src/config.ts";
 import { pluginLanguageBadge } from "./src/plugins/expressive-code/language-badge.ts";
 import { AdmonitionComponent } from "./src/plugins/rehype-component-admonition.mjs";
@@ -30,6 +33,26 @@ export default defineConfig({
 	base: "/",
 	trailingSlash: "always",
 	integrations: [
+		mermaid({
+			theme: "base",
+			autoTheme: false,
+			enableLog: false,
+			mermaidConfig: {
+				themeVariables: {
+					background: "transparent",
+					primaryColor: "var(--card-bg-elevated)",
+					primaryTextColor: "var(--text-main)",
+					primaryBorderColor: "var(--primary)",
+					lineColor: "var(--text-secondary)",
+					secondaryColor: "var(--btn-regular-bg)",
+					secondaryTextColor: "var(--text-main)",
+					secondaryBorderColor: "var(--primary)",
+					tertiaryColor: "var(--surface-tint)",
+					tertiaryTextColor: "var(--text-main)",
+					tertiaryBorderColor: "var(--primary)",
+				},
+			},
+		}),
 		tailwind({
 			nesting: true,
 		}),
@@ -103,13 +126,16 @@ export default defineConfig({
 		sitemap(),
 	],
 	markdown: {
+		gfm: true,
 		remarkPlugins: [
+			remarkGfm,
 			remarkMath,
 			remarkReadingTime,
 			remarkExcerpt,
 			remarkGithubAdmonitionsToDirectives,
 			remarkDirective,
 			remarkSectionize,
+			remarkInfographic,
 			parseDirectiveNode,
 		],
 		rehypePlugins: [

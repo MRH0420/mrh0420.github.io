@@ -1,6 +1,7 @@
 ---
 title: Draft Example
 published: 2022-07-01
+image: "guide/cover.jpeg"
 tags: [Markdown, Blogging, Demo]
 category: Examples
 draft: true
