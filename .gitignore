@@ -1,3 +1,7 @@
+# .gitignore
+# references
+references/
+
 # --- 依赖与包管理器 ---
 node_modules/
 .pnpm-debug.log*

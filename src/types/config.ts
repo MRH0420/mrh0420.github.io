@@ -50,6 +50,11 @@ export type SiteConfig = {
 			src: string;
 		};
 	};
+	clickEffect: {
+		enable: boolean;
+		disableOnMobile: boolean;
+		excludeSelectors: string[];
+	};
 };
 
 export type Favicon = {

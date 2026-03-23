@@ -52,6 +52,11 @@ export const siteConfig: SiteConfig = {
 			src: "assets/images/taichi.png", // Relative to the /src directory. Relative to the /public directory if it starts with '/'
 		},
 	},
+	clickEffect: {
+		enable: true, // Show a theme-colored particle burst when the visitor clicks on the page
+		disableOnMobile: false, // Disable the click effect on touch devices when needed
+		excludeSelectors: [], // Skip selected elements when needed while still allowing buttons to trigger the effect
+	},
 };
 
 export const navBarConfig: NavBarConfig = {
