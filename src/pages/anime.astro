@@ -1,0 +1,197 @@
+---
+import { siteConfig } from "@/config";
+import BangumiBoard from "@/components/my/BangumiBoard.astro";
+import MainGridLayout from "@/layouts/MainGridLayout.astro";
+import { resolveConfiguredAsset } from "@/utils/asset-resolver";
+import { Icon } from "astro-icon/components";
+
+const animeConfig = siteConfig.mySection.anime;
+if (!siteConfig.mySection.enable || !animeConfig.enable) {
+	return Astro.redirect("/");
+}
+
+const localItems = animeConfig.items.map((item) => ({
+	...item,
+	coverUrl: resolveConfiguredAsset(item.cover),
+}));
+
+const parseEventSortValue = (dateText: string) => {
+	const fullDateMatches = [...dateText.matchAll(/(\d{4})\.(\d{1,2})\.(\d{1,2})/g)];
+	if (fullDateMatches.length > 0) {
+		return Math.max(
+			...fullDateMatches.map((match) =>
+				new Date(
+					Number.parseInt(match[1], 10),
+					Number.parseInt(match[2], 10) - 1,
+					Number.parseInt(match[3], 10),
+				).getTime(),
+			),
+		);
+	}
+
+	const yearMatches = dateText.match(/\d{4}/g);
+	if (yearMatches && yearMatches.length > 0) {
+		return Math.max(
+			...yearMatches.map((value) => new Date(Number.parseInt(value, 10), 0, 1).getTime()),
+		);
+	}
+
+	return Number.NEGATIVE_INFINITY;
+};
+
+const eventItems = animeConfig.events
+	.map((item) => ({
+		...item,
+		coverUrl: resolveConfiguredAsset(item.cover),
+		sortValue: parseEventSortValue(item.date),
+		displayYear: (() => {
+			const matches = item.date.match(/\d{4}/g);
+			if (!matches || matches.length === 0) return undefined;
+			return String(Math.min(...matches.map((value) => Number.parseInt(value, 10))));
+		})(),
+	}))
+	.sort((a, b) => b.sortValue - a.sortValue);
+
+const statusLabels = {
+	watching: "Watching",
+	completed: "Completed",
+	planned: "Planned",
+	on_hold: "On Hold",
+	dropped: "Dropped",
+};
+
+const statusCounts = Object.entries(statusLabels).map(([status, label]) => ({
+	status,
+	label,
+	count: localItems.filter((item) => item.status === status).length,
+}));
+---
+
+<MainGridLayout title={animeConfig.title} description={animeConfig.subtitle}>
+	{animeConfig.mode === "bangumi" && animeConfig.bangumi.enable ? (
+		<BangumiBoard
+			userId={animeConfig.bangumi.userId}
+			accessToken={animeConfig.bangumi.accessToken}
+			defaultTab={animeConfig.bangumi.defaultTab}
+			subjectTypes={animeConfig.bangumi.subjectTypes}
+			pageSize={animeConfig.bangumi.pageSize}
+			events={eventItems}
+		/>
+	) : (
+		<section class="space-y-5">
+			<div class="card-base overflow-visible px-6 py-6 md:px-8">
+				<div class="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+					<div class="max-w-3xl">
+						<div class="mb-2 text-[0.75rem] font-semibold uppercase tracking-[0.18em] text-[var(--primary)]">My</div>
+						<h1 class="text-3xl font-bold text-90 md:text-4xl">{animeConfig.title}</h1>
+						<p class="mt-3 max-w-2xl text-sm text-50 md:text-base">{animeConfig.subtitle}</p>
+					</div>
+					<div class="grid grid-cols-2 gap-3 md:grid-cols-3">
+						{statusCounts.map((item) => (
+							<div class="rounded-[1.1rem] bg-[var(--btn-regular-bg)] px-4 py-3">
+								<div class="text-xl font-bold text-90">{item.count}</div>
+								<div class="text-xs uppercase tracking-[0.12em] text-50">{item.label}</div>
+							</div>
+						))}
+					</div>
+				</div>
+				<div class="mt-5 flex flex-wrap gap-2">
+					<button class="anime-filter-tag anime-filter-active" data-status="all">All</button>
+					{statusCounts.map((item) => (
+						<button class="anime-filter-tag" data-status={item.status}>{item.label}</button>
+					))}
+				</div>
+			</div>
+
+			<div id="anime-grid" class="grid gap-4 lg:grid-cols-2">
+				{localItems.map((item) => (
+					<article class="anime-item card-base overflow-hidden" data-status={item.status}>
+						<div class="grid h-full gap-0 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+							<div class="relative min-h-[15rem] overflow-hidden">
+								{item.coverUrl && <img src={item.coverUrl} alt={item.title} class="h-full w-full object-cover opacity-[0.9]" />}
+								<div class="absolute inset-0 bg-[linear-gradient(180deg,rgba(15,23,42,0.06)_0%,rgba(15,23,42,0.5)_100%)]"></div>
+								<div class="absolute left-4 top-4 rounded-full bg-[rgba(15,23,42,0.55)] px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-white/85 backdrop-blur-md">
+									{statusLabels[item.status]}
+								</div>
+							</div>
+							<div class="flex flex-col justify-between px-5 py-5 md:px-6">
+								<div>
+									<div class="mb-3 flex items-center justify-between gap-3">
+										<div class="text-xs uppercase tracking-[0.14em] text-50">{item.year}</div>
+										<div class="flex items-center gap-1 rounded-full bg-[var(--btn-regular-bg)] px-2.5 py-1 text-sm font-semibold text-[var(--primary)]">
+											<Icon name="material-symbols:star-rounded" class="text-[1rem]" />
+											<span>{item.rating.toFixed(1)}</span>
+										</div>
+									</div>
+									<h2 class="text-2xl font-bold leading-tight text-90">{item.title}</h2>
+									<p class="mt-2 text-sm text-50">{item.description}</p>
+									<div class="mt-4 flex flex-wrap gap-2">
+										{item.genre.map((genre) => (
+											<span class="rounded-full bg-[var(--btn-regular-bg)] px-2.5 py-1 text-[0.72rem] font-medium text-[var(--btn-content)]">
+												{genre}
+											</span>
+										))}
+									</div>
+								</div>
+								<div class="mt-5 space-y-3">
+									<div class="flex items-center justify-between text-sm text-50">
+										<span>Studio</span>
+										<span class="font-medium text-75">{item.studio}</span>
+									</div>
+									{item.totalEpisodes && (
+										<div>
+											<div class="mb-1 flex items-center justify-between text-sm text-50">
+												<span>Progress</span>
+												<span>{item.progress ?? 0}/{item.totalEpisodes}</span>
+											</div>
+											<div class="h-2 rounded-full bg-[var(--btn-regular-bg)]">
+												<div
+													class="h-full rounded-full bg-[var(--primary)]"
+													style={`width: ${Math.min(((item.progress ?? 0) / item.totalEpisodes) * 100, 100)}%`}
+												></div>
+											</div>
+										</div>
+									)}
+									{item.link && (
+										<a href={item.link} target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-sm font-semibold text-[var(--primary)] hover:text-[var(--link-hover)]">
+											View source
+											<Icon name="fa6-solid:arrow-up-right-from-square" class="text-[0.8rem]" />
+										</a>
+									)}
+								</div>
+							</div>
+						</div>
+					</article>
+				))}
+			</div>
+		</section>
+	)}
+</MainGridLayout>
+
+<script>
+	const filterButtons = Array.from(document.querySelectorAll(".anime-filter-tag"));
+	const animeItems = Array.from(document.querySelectorAll(".anime-item"));
+
+	for (const button of filterButtons) {
+		button.addEventListener("click", () => {
+			const status = button.getAttribute("data-status");
+			for (const target of filterButtons) {
+				target.classList.toggle("anime-filter-active", target === button);
+			}
+			for (const item of animeItems) {
+				const shouldShow = status === "all" || item.getAttribute("data-status") === status;
+				item.classList.toggle("hidden", !shouldShow);
+			}
+		});
+	}
+</script>
+
+<style is:global>
+.anime-filter-tag {
+	@apply rounded-full bg-[var(--btn-regular-bg)] px-3 py-1.5 text-sm font-semibold text-[var(--text-secondary)] transition hover:bg-[var(--btn-regular-bg-hover)] hover:text-[var(--primary)];
+}
+
+.anime-filter-active {
+	@apply bg-[var(--surface-tint)] text-[var(--primary)];
+}
+</style>

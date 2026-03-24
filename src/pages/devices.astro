@@ -1,0 +1,73 @@
+---
+import { siteConfig } from "@/config";
+import MainGridLayout from "@/layouts/MainGridLayout.astro";
+import { resolveConfiguredAsset } from "@/utils/asset-resolver";
+import { Icon } from "astro-icon/components";
+
+const devicesConfig = siteConfig.mySection.devices;
+if (!siteConfig.mySection.enable || !devicesConfig.enable) {
+	return Astro.redirect("/");
+}
+
+const groups = devicesConfig.groups.map((group) => ({
+	...group,
+	items: group.items.map((item) => ({
+		...item,
+		imageUrl: resolveConfiguredAsset(item.image),
+	})),
+}));
+---
+
+<MainGridLayout title={devicesConfig.title} description={devicesConfig.subtitle}>
+	<section class="space-y-5">
+		<div class="card-base px-6 py-6 md:px-8">
+			<div class="mb-2 text-[0.75rem] font-semibold uppercase tracking-[0.18em] text-[var(--primary)]">My</div>
+			<h1 class="text-3xl font-bold text-90 md:text-4xl">{devicesConfig.title}</h1>
+			<p class="mt-3 max-w-2xl text-sm text-50 md:text-base">{devicesConfig.subtitle}</p>
+		</div>
+
+		<div class="space-y-6">
+			{groups.map((group) => (
+				<section>
+					<div class="mb-3 px-1 text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-[var(--primary)]">
+						{group.group}
+					</div>
+					<div class="grid gap-4 xl:grid-cols-2">
+						{group.items.map((item) => (
+							<article class="card-base overflow-hidden">
+								<div class="grid gap-0 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+									<div class="relative min-h-[14rem] overflow-hidden">
+										{item.imageUrl && <img src={item.imageUrl} alt={item.name} class="h-full w-full object-cover opacity-[0.9]" />}
+										<div class="absolute inset-0 bg-[linear-gradient(180deg,rgba(15,23,42,0.08)_0%,rgba(15,23,42,0.52)_100%)]"></div>
+										<div class="absolute left-4 top-4 rounded-full bg-[rgba(15,23,42,0.55)] px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-white/85 backdrop-blur-md">
+											{item.type}
+										</div>
+									</div>
+									<div class="px-5 py-5 md:px-6">
+										<div class="flex items-start justify-between gap-4">
+											<div>
+												<h2 class="text-2xl font-bold text-90">{item.name}</h2>
+												{item.description && <p class="mt-2 text-sm text-50">{item.description}</p>}
+											</div>
+											<div class="flex h-11 w-11 items-center justify-center rounded-[1rem] bg-[var(--btn-regular-bg)] text-[var(--primary)]">
+												<Icon name="material-symbols:memory-outline-rounded" class="text-[1.35rem]" />
+											</div>
+										</div>
+										<div class="mt-5 space-y-3">
+											{item.specs.map((spec) => (
+												<div class="flex items-start justify-between gap-4 rounded-[1rem] bg-[var(--btn-regular-bg)] px-3 py-2.5">
+													<div class="text-xs uppercase tracking-[0.12em] text-50">{spec.label}</div>
+													<div class="max-w-[60%] text-right text-sm font-medium text-75">{spec.value}</div>
+												</div>
+											))}
+										</div>
+									</div>
+								</div>
+							</article>
+						))}
+					</div>
+				</section>
+			))}
+		</div>
+	</section>
+</MainGridLayout>

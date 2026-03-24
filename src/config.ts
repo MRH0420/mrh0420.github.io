@@ -6,6 +6,10 @@ import type {
 	SiteConfig,
 } from "./types/config";
 import { LinkPreset } from "./types/config";
+import { animeSectionConfig } from "./components/my_config/anime";
+import { gallerySectionConfig } from "./components/my_config/gallery";
+import { diarySectionConfig } from "./components/my_config/diary";
+import { devicesSectionConfig } from "./components/my_config/devices";
 
 export const siteConfig: SiteConfig = {
 	title: "九重樱叶",
@@ -57,6 +61,14 @@ export const siteConfig: SiteConfig = {
 		disableOnMobile: false, // Disable the click effect on touch devices when needed
 		excludeSelectors: [], // Skip selected elements when needed while still allowing buttons to trigger the effect
 	},
+	mySection: {
+		enable: true, // Enable the grouped "My" navigation and its feature pages
+		navLabel: "My", // Label shown in the desktop dropdown and mobile navigation panel
+		anime: animeSectionConfig,
+		gallery: gallerySectionConfig,
+		diary: diarySectionConfig,
+		devices: devicesSectionConfig,
+	},
 };
 
 export const navBarConfig: NavBarConfig = {
@@ -64,6 +76,24 @@ export const navBarConfig: NavBarConfig = {
 		LinkPreset.Home,
 		LinkPreset.Archive,
 		LinkPreset.About,
+		{
+			name: siteConfig.mySection.navLabel,
+			url: siteConfig.mySection.anime.slug,
+			children: [
+				...(siteConfig.mySection.anime.enable
+					? [{ name: siteConfig.mySection.anime.navLabel, url: siteConfig.mySection.anime.slug }]
+					: []),
+				...(siteConfig.mySection.gallery.enable
+					? [{ name: siteConfig.mySection.gallery.navLabel, url: siteConfig.mySection.gallery.slug }]
+					: []),
+				...(siteConfig.mySection.diary.enable
+					? [{ name: siteConfig.mySection.diary.navLabel, url: siteConfig.mySection.diary.slug }]
+					: []),
+				...(siteConfig.mySection.devices.enable
+					? [{ name: siteConfig.mySection.devices.navLabel, url: siteConfig.mySection.devices.slug }]
+					: []),
+			],
+		},
 		{
 			name: "GitHub",
 			url: "https://github.com/MRH0420", // Internal links should not include the base path, as it is automatically added

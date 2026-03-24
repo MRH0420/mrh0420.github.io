@@ -55,6 +55,7 @@ export type SiteConfig = {
 		disableOnMobile: boolean;
 		excludeSelectors: string[];
 	};
+	mySection: MySectionConfig;
 };
 
 export type Favicon = {
@@ -73,6 +74,7 @@ export type NavBarLink = {
 	name: string;
 	url: string;
 	external?: boolean;
+	children?: NavBarLink[];
 };
 
 export type NavBarConfig = {
@@ -118,4 +120,115 @@ export type BlogPostData = {
 
 export type ExpressiveCodeConfig = {
 	theme: string;
+};
+
+export type AnimeStatus =
+	| "watching"
+	| "completed"
+	| "planned"
+	| "on_hold"
+	| "dropped";
+
+export type MyAnimeItem = {
+	title: string;
+	cover: string;
+	year: number;
+	studio: string;
+	status: AnimeStatus;
+	rating: number;
+	progress?: number;
+	totalEpisodes?: number;
+	genre: string[];
+	description: string;
+	link?: string;
+};
+
+export type MyBangumiSubjectTypeKey =
+	| "anime"
+	| "book"
+	| "music"
+	| "game"
+	| "real";
+
+export type MyAnimeBangumiConfig = {
+	enable: boolean;
+	userId: string;
+	accessToken: string;
+	defaultTab: MyBangumiSubjectTypeKey;
+	subjectTypes: MyBangumiSubjectTypeKey[];
+	pageSize: number;
+};
+
+export type MyAnimeEventStatus = "wish" | "visited";
+
+export type MyAnimeEventItem = {
+	cover: string;
+	description: string;
+	date: string;
+	status: MyAnimeEventStatus;
+	location?: string;
+	link?: string;
+};
+
+export type MyGalleryCategory = {
+	slug: string;
+	title: string;
+	description?: string;
+	cover: string;
+	photos: string[];
+};
+
+export type MyDiaryEntry = {
+	date: string;
+	content: string;
+	mood?: string;
+	location?: string;
+	tags?: string[];
+	images?: string[];
+};
+
+export type MyDeviceSpec = {
+	label: string;
+	value: string;
+};
+
+export type MyDeviceItem = {
+	name: string;
+	type: string;
+	image: string;
+	description?: string;
+	specs: MyDeviceSpec[];
+};
+
+export type MyDeviceGroup = {
+	group: string;
+	items: MyDeviceItem[];
+};
+
+export type MyFeaturePageConfig = {
+	enable: boolean;
+	slug: string;
+	navLabel: string;
+	title: string;
+	subtitle: string;
+};
+
+export type MySectionConfig = {
+	enable: boolean;
+	navLabel: string;
+	anime: MyFeaturePageConfig & {
+		mode: "local" | "bangumi";
+		bangumi: MyAnimeBangumiConfig;
+		items: MyAnimeItem[];
+		events: MyAnimeEventItem[];
+	};
+	gallery: MyFeaturePageConfig & {
+		categories: MyGalleryCategory[];
+	};
+	diary: MyFeaturePageConfig & {
+		entries: MyDiaryEntry[];
+	};
+	devices: MyFeaturePageConfig & {
+		groups: MyDeviceGroup[];
+	};
 };

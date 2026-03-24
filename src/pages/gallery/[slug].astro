@@ -1,0 +1,60 @@
+---
+import { siteConfig } from "@/config";
+import MainGridLayout from "@/layouts/MainGridLayout.astro";
+import { resolveConfiguredAsset } from "@/utils/asset-resolver";
+import { url } from "@/utils/url-utils";
+
+export function getStaticPaths() {
+	const galleryConfig = siteConfig.mySection.gallery;
+	if (!siteConfig.mySection.enable || !galleryConfig.enable) return [];
+	return galleryConfig.categories.map((category) => ({
+		params: { slug: category.slug },
+		props: { category },
+	}));
+}
+
+const { category } = Astro.props;
+const coverUrl = resolveConfiguredAsset(category.cover);
+const photoUrls = category.photos
+	.map((photo: string) => resolveConfiguredAsset(photo))
+	.filter(Boolean) as string[];
+---
+
+<MainGridLayout title={category.title} description={category.description || siteConfig.mySection.gallery.subtitle}>
+	<section class="space-y-5">
+		<div class="card-base overflow-hidden">
+			<div class="grid gap-0 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+				<div class="relative min-h-[18rem] overflow-hidden">
+					{coverUrl && <img src={coverUrl} alt={category.title} class="h-full w-full object-cover opacity-[0.9]" />}
+					<div class="absolute inset-0 bg-[linear-gradient(180deg,rgba(15,23,42,0.08)_0%,rgba(15,23,42,0.62)_100%)]"></div>
+					<div class="absolute left-5 top-5">
+						<a href={url(siteConfig.mySection.gallery.slug)} class="rounded-full bg-[rgba(15,23,42,0.55)] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-white/80 backdrop-blur-md">
+							Back to Gallery
+						</a>
+					</div>
+					<div class="absolute inset-x-0 bottom-0 p-6">
+						<h1 class="text-3xl font-bold text-white md:text-4xl">{category.title}</h1>
+						{category.description && <p class="mt-3 max-w-2xl text-sm text-white/80 md:text-base">{category.description}</p>}
+					</div>
+				</div>
+				<div class="grid grid-cols-2 gap-3 p-4 md:grid-cols-3">
+					{photoUrls.slice(0, 6).map((photo, index) => (
+						<div class:list={[
+							"overflow-hidden rounded-[1rem]",
+							index === 0 ? "col-span-2 row-span-2 md:col-span-2" : "",
+						]}>
+							<img src={photo} alt={`${category.title} preview ${index + 1}`} class="h-full w-full object-cover" />
+						</div>
+					))}
+				</div>
+			</div>
+		</div>
+		<div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+			{photoUrls.map((photo, index) => (
+				<a href={photo} target="_blank" rel="noopener" class="card-base overflow-hidden">
+					<img src={photo} alt={`${category.title} photo ${index + 1}`} class="aspect-[4/3] w-full object-cover transition duration-300 hover:scale-[1.03]" />
+				</a>
+			))}
+		</div>
+	</section>
+</MainGridLayout>

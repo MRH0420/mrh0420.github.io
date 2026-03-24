@@ -1,0 +1,84 @@
+---
+import { siteConfig } from "@/config";
+import MainGridLayout from "@/layouts/MainGridLayout.astro";
+import { resolveConfiguredAsset } from "@/utils/asset-resolver";
+import { Icon } from "astro-icon/components";
+
+const diaryConfig = siteConfig.mySection.diary;
+if (!siteConfig.mySection.enable || !diaryConfig.enable) {
+	return Astro.redirect("/");
+}
+
+const entries = diaryConfig.entries
+	.map((entry) => ({
+		...entry,
+		dateObject: new Date(entry.date),
+		imageUrls: (entry.images || [])
+			.map((image) => resolveConfiguredAsset(image))
+			.filter(Boolean) as string[],
+	}))
+	.sort((a, b) => b.dateObject.getTime() - a.dateObject.getTime());
+---
+
+<MainGridLayout title={diaryConfig.title} description={diaryConfig.subtitle}>
+	<section class="space-y-5">
+		<div class="card-base px-6 py-6 md:px-8">
+			<div class="mb-2 text-[0.75rem] font-semibold uppercase tracking-[0.18em] text-[var(--primary)]">My</div>
+			<div class="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+				<div>
+					<h1 class="text-3xl font-bold text-90 md:text-4xl">{diaryConfig.title}</h1>
+					<p class="mt-3 max-w-2xl text-sm text-50 md:text-base">{diaryConfig.subtitle}</p>
+				</div>
+				<div class="rounded-[1.1rem] bg-[var(--btn-regular-bg)] px-5 py-4">
+					<div class="text-3xl font-bold text-90">{entries.length}</div>
+					<div class="text-xs uppercase tracking-[0.14em] text-50">Entries</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="space-y-4">
+			{entries.map((entry) => (
+				<article class="card-base px-5 py-5 md:px-6">
+					<div class="flex flex-wrap items-center gap-3 text-sm text-50">
+						<div class="inline-flex items-center gap-2">
+							<Icon name="material-symbols:calendar-today-outline-rounded" class="text-[1rem]" />
+							<span>{entry.dateObject.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}</span>
+						</div>
+						{entry.location && (
+							<div class="inline-flex items-center gap-2">
+								<Icon name="material-symbols:location-on-outline-rounded" class="text-[1rem]" />
+								<span>{entry.location}</span>
+							</div>
+						)}
+						{entry.mood && (
+							<div class="inline-flex items-center gap-2">
+								<Icon name="material-symbols:favorite-outline-rounded" class="text-[1rem]" />
+								<span>{entry.mood}</span>
+							</div>
+						)}
+					</div>
+					<p class="mt-4 text-base leading-8 text-75">{entry.content}</p>
+					{entry.imageUrls.length > 0 && (
+						<div class="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3">
+							{entry.imageUrls.map((image, index) => (
+								<a href={image} target="_blank" rel="noopener" class:list={[
+									"overflow-hidden rounded-[1rem]",
+									index === 0 && entry.imageUrls.length > 2 ? "col-span-2 md:col-span-2" : "",
+								]}>
+									<img src={image} alt="Diary moment" class="h-full w-full object-cover transition duration-300 hover:scale-[1.03]" />
+								</a>
+							))}
+						</div>
+					)}
+					{entry.tags && entry.tags.length > 0 && (
+						<div class="mt-4 flex flex-wrap gap-2">
+							{entry.tags.map((tag) => (
+								<span class="rounded-full bg-[var(--btn-regular-bg)] px-2.5 py-1 text-[0.72rem] font-medium text-[var(--btn-content)]">{tag}</span>
+							))}
+						</div>
+					)}
+				</article>
+			))}
+		</div>
+	</section>
+</MainGridLayout>

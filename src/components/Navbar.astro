@@ -42,6 +42,52 @@ const currentPath = Astro.url.pathname;
             {links.map((l) => {
                 const href = l.external ? l.url : url(l.url);
                 const isCurrent = !l.external && pathsEqual(currentPath, href);
+                const isChildCurrent = !!l.children?.some((child) =>
+                    pathsEqual(currentPath, url(child.url)),
+                );
+                if (l.children && l.children.length > 0) {
+                    return (
+                        <div class="group relative">
+                            <button
+                                type="button"
+                                aria-label={l.name}
+                                class:list={[
+                                    "btn-plain scale-animation rounded-xl h-11 font-bold px-4 active:scale-95",
+                                    {
+                                        "bg-[var(--surface-tint)] text-[var(--primary)]": isChildCurrent,
+                                    },
+                                ]}
+                            >
+                                <div class="flex items-center gap-1">
+                                    <span>{l.name}</span>
+                                    <Icon name="material-symbols:keyboard-arrow-down-rounded" class="text-[1rem] transition duration-200 group-hover:translate-y-[1px]" />
+                                </div>
+                            </button>
+                            <div class="pointer-events-none absolute left-0 top-full z-50 pt-2 opacity-0 translate-y-1 transition duration-200 group-hover:pointer-events-auto group-hover:opacity-100 group-hover:translate-y-0">
+                                <div class="w-[12rem] rounded-[1.1rem] border border-[var(--card-border)] bg-[oklch(from_var(--card-bg-solid)_l_c_h_/_0.82)] p-2 shadow-[var(--shadow-card)] backdrop-blur-xl">
+                                    {l.children.map((child) => {
+                                        const childHref = url(child.url);
+                                        const childCurrent = pathsEqual(currentPath, childHref);
+                                        return (
+                                            <a
+                                                href={childHref}
+                                                class:list={[
+                                                    "flex items-center justify-between rounded-[0.9rem] px-3 py-2 text-sm font-bold text-[var(--text-secondary)] transition hover:bg-[var(--btn-plain-bg-hover)] hover:text-[var(--primary)]",
+                                                    {
+                                                        "bg-[var(--surface-tint)] text-[var(--primary)]": childCurrent,
+                                                    },
+                                                ]}
+                                            >
+                                                <span>{child.name}</span>
+                                                <Icon name="material-symbols:chevron-right-rounded" class="text-[1rem]" />
+                                            </a>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </div>
+                    );
+                }
                 return <a aria-label={l.name} href={href} target={l.external ? "_blank" : null}
                           data-nav-link={!l.external ? "true" : null}
                           data-nav-href={!l.external ? href : null}
