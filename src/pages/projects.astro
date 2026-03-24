@@ -1,0 +1,188 @@
+---
+import { siteConfig } from "@/config";
+import MainGridLayout from "@/layouts/MainGridLayout.astro";
+import { resolveConfiguredAsset } from "@/utils/asset-resolver";
+import { Icon } from "astro-icon/components";
+
+const projectsConfig = siteConfig.projectSection.projects;
+if (!siteConfig.projectSection.enable || !projectsConfig.enable) {
+	return Astro.redirect("/");
+}
+
+const projects = projectsConfig.items.map((item) => ({
+	...item,
+	coverUrl: resolveConfiguredAsset(item.cover),
+}));
+
+const featuredProjects = projects.filter((item) => item.featured);
+const categories = [...new Set(projects.map((item) => item.category))];
+const allTechStack = [...new Set(projects.flatMap((item) => item.stack))].sort();
+const competitionResults = [...projectsConfig.competitionResults].sort(
+	(a, b) => Number.parseInt(b.year, 10) - Number.parseInt(a.year, 10),
+);
+
+const stats = [
+	{ label: "Projects", value: String(projects.length) },
+	{ label: "Featured", value: String(featuredProjects.length) },
+	{ label: "Results", value: String(competitionResults.length) },
+	{ label: "Tech Stack", value: String(allTechStack.length) },
+];
+---
+
+<MainGridLayout title={projectsConfig.title} description={projectsConfig.subtitle}>
+	<section class="space-y-6">
+		<div class="card-base px-6 py-6 md:px-8">
+			<div class="mb-2 text-[0.75rem] font-semibold uppercase tracking-[0.18em] text-[var(--primary)]">Project</div>
+			<h1 class="text-3xl font-bold text-90 md:text-4xl">{projectsConfig.title}</h1>
+			<p class="mt-3 max-w-3xl text-sm text-50 md:text-base">{projectsConfig.subtitle}</p>
+		</div>
+
+		<div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+			{stats.map((item) => (
+				<div class="card-base rounded-[1.2rem] px-5 py-4">
+					<div class="text-3xl font-bold text-90">{item.value}</div>
+					<div class="mt-1 text-[0.74rem] font-semibold uppercase tracking-[0.14em] text-50">{item.label}</div>
+				</div>
+			))}
+		</div>
+
+		{competitionResults.length > 0 && (
+			<section class="card-base px-5 py-5 md:px-6">
+				<div class="mb-4 text-[0.76rem] font-semibold uppercase tracking-[0.16em] text-[var(--primary)]">Competition Results</div>
+				<div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+					{competitionResults.map((item) => (
+						<div class="rounded-[1rem] bg-[var(--btn-regular-bg)] px-4 py-3">
+							<div class="flex items-start justify-between gap-3">
+								<div>
+									<div class="text-base font-bold text-90">{item.title}</div>
+									<div class="mt-1 text-sm text-50">{item.result}</div>
+								</div>
+								<div class="rounded-full bg-[var(--surface-tint)] px-2.5 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-[var(--primary)]">
+									{item.year}
+								</div>
+							</div>
+							<div class="mt-3 text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-50">{item.scope}</div>
+						</div>
+					))}
+				</div>
+			</section>
+		)}
+
+		{featuredProjects.length > 0 && (
+			<section class="space-y-4">
+				<div class="px-1 text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-[var(--primary)]">Featured Projects</div>
+				<div class="grid gap-4 xl:grid-cols-2">
+					{featuredProjects.map((project) => (
+						<article class="card-base overflow-hidden">
+							<div class="grid gap-0 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+								<div class="relative min-h-[13rem] overflow-hidden">
+									{project.coverUrl && <img src={project.coverUrl} alt={project.title} class="h-full w-full object-cover opacity-[0.9]" />}
+									<div class="absolute inset-0 bg-[linear-gradient(180deg,rgba(15,23,42,0.08)_0%,rgba(15,23,42,0.58)_100%)]"></div>
+									<div class="absolute left-4 top-4 rounded-full bg-[rgba(15,23,42,0.55)] px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-white/82 backdrop-blur-md">
+										{project.category}
+									</div>
+								</div>
+								<div class="flex flex-col justify-between px-5 py-5 md:px-6">
+									<div>
+										<div class="mb-2 text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-50">{project.period}</div>
+										<h2 class="text-2xl font-bold text-90">{project.title}</h2>
+										<p class="mt-3 text-sm leading-7 text-50">{project.summary}</p>
+										<div class="mt-4 flex flex-wrap gap-2">
+											{project.stack.slice(0, 5).map((tag) => (
+												<span class="rounded-full bg-[var(--btn-regular-bg)] px-2.5 py-1 text-[0.72rem] font-medium text-[var(--btn-content)]">{tag}</span>
+											))}
+										</div>
+									</div>
+									<div class="mt-5 grid gap-2 sm:grid-cols-3">
+										{project.metrics.map((metric) => (
+											<div class="rounded-[0.95rem] bg-[var(--btn-regular-bg)] px-3 py-2.5">
+												<div class="text-base font-bold text-90">{metric.value}</div>
+												<div class="text-[0.68rem] uppercase tracking-[0.12em] text-50">{metric.label}</div>
+											</div>
+										))}
+									</div>
+								</div>
+							</div>
+						</article>
+					))}
+				</div>
+			</section>
+		)}
+
+		<div class="space-y-6">
+			{categories.map((category) => (
+				<section class="space-y-3">
+					<div class="flex items-end justify-between gap-4 px-1">
+						<div class="text-[0.82rem] font-semibold uppercase tracking-[0.16em] text-[var(--primary)]">{category}</div>
+						<div class="text-sm text-50">{projects.filter((item) => item.category === category).length} projects</div>
+					</div>
+					<div class="grid gap-4 xl:grid-cols-2">
+						{projects.filter((item) => item.category === category).map((project) => (
+							<article class="card-base px-5 py-5 md:px-6">
+								<div class="flex items-start justify-between gap-4">
+									<div>
+										<div class="mb-2 text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-50">{project.period}</div>
+										<h2 class="text-xl font-bold text-90">{project.title}</h2>
+									</div>
+									<div class="rounded-full bg-[var(--btn-regular-bg)] px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-[var(--primary)]">
+										{project.status.replaceAll("_", " ")}
+									</div>
+								</div>
+								<p class="mt-3 text-sm leading-7 text-50">{project.summary}</p>
+								<div class="mt-4 grid gap-2 sm:grid-cols-3">
+									{project.metrics.map((metric) => (
+										<div class="rounded-[0.95rem] bg-[var(--btn-regular-bg)] px-3 py-2.5">
+											<div class="text-base font-bold text-90">{metric.value}</div>
+											<div class="text-[0.68rem] uppercase tracking-[0.12em] text-50">{metric.label}</div>
+										</div>
+									))}
+								</div>
+								{project.highlights && project.highlights.length > 0 && (
+									<div class="mt-4 space-y-2">
+										{project.highlights.map((highlight) => (
+											<div class="flex items-start gap-2 text-sm text-75">
+												<Icon name="material-symbols:check-circle-outline-rounded" class="mt-[0.1rem] text-[1rem] text-[var(--primary)]" />
+												<span>{highlight}</span>
+											</div>
+										))}
+									</div>
+								)}
+								<div class="mt-4 flex flex-wrap gap-2">
+									{project.stack.map((tag) => (
+										<span class="rounded-full bg-[var(--btn-regular-bg)] px-2.5 py-1 text-[0.72rem] font-medium text-[var(--btn-content)]">{tag}</span>
+									))}
+								</div>
+								{project.awards && project.awards.length > 0 && (
+									<div class="mt-4 flex flex-wrap gap-2">
+										{project.awards.map((award) => (
+											<span class="rounded-full bg-[rgba(96,165,250,0.15)] px-2.5 py-1 text-[0.72rem] font-medium text-[rgb(147,197,253)]">{award}</span>
+										))}
+									</div>
+								)}
+								{project.links && project.links.length > 0 && (
+									<div class="mt-4 flex flex-wrap gap-3">
+										{project.links.map((link) => (
+											<a href={link.url} target="_blank" rel="noopener" class="inline-flex items-center gap-2 text-sm font-semibold text-[var(--primary)] hover:text-[var(--link-hover)]">
+												{link.label}
+												<Icon name="fa6-solid:arrow-up-right-from-square" class="text-[0.75rem]" />
+											</a>
+										))}
+									</div>
+								)}
+							</article>
+						))}
+					</div>
+				</section>
+			))}
+		</div>
+
+		<section class="card-base px-5 py-5 md:px-6">
+			<div class="mb-4 text-[0.76rem] font-semibold uppercase tracking-[0.16em] text-[var(--primary)]">Tech Stack</div>
+			<div class="flex flex-wrap gap-2">
+				{allTechStack.map((tech) => (
+					<span class="rounded-full bg-[var(--btn-regular-bg)] px-3 py-1.5 text-sm font-medium text-75">{tech}</span>
+				))}
+			</div>
+		</section>
+	</section>
+</MainGridLayout>

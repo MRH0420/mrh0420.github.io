@@ -18,6 +18,13 @@ export const animeSectionConfig: SiteConfig["mySection"]["anime"] = {
 	items: [],
 	events: [
 		{
+			cover: "assets/images/events/RD-Sounds20th.png",
+			description: "凋叶棕20周年live",
+			date: "2027.2",
+			status: "wish", // Planned event that the user wants to attend
+			location: "Tokyo",
+		},
+		{
 			cover: "assets/images/events/Lehre der Rose.png",
 			description: "Roselia「Lehre der Rose」",
 			date: "2026.8.29-2026.8.30",
@@ -40,7 +47,7 @@ export const animeSectionConfig: SiteConfig["mySection"]["anime"] = {
 		},
 		{
 			cover: "assets/images/events/B10.png",
-			description: "Bangdream! 10th Anniversary Live「In the name of BanG Dream!」",
+			description: "BanGDream! 10th Anniversary Live「In the name of BanG Dream!」",
 			date: "2026.2.28",
 			status: "visited", // Event that the user has already attended
 			location: "Yokohama, Kanagawa",

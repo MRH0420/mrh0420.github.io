@@ -1,0 +1,167 @@
+---
+import { siteConfig } from "@/config";
+import MainGridLayout from "@/layouts/MainGridLayout.astro";
+import { Icon } from "astro-icon/components";
+
+const skillsConfig = siteConfig.projectSection.skills;
+if (!siteConfig.projectSection.enable || !skillsConfig.enable) {
+	return Astro.redirect("/");
+}
+
+const skills = skillsConfig.items;
+const categories = [...new Set(skills.map((item) => item.category))];
+const advancedSkills = skills.filter((item) => item.level === "advanced" || item.level === "expert");
+const avgScore = Math.round(skills.reduce((sum, item) => sum + item.score, 0) / Math.max(skills.length, 1));
+const totalMonths = skills.reduce((sum, item) => sum + item.experience.years * 12 + item.experience.months, 0);
+const totalYears = (totalMonths / 12).toFixed(1);
+const relatedProjectCount = new Set(skills.flatMap((item) => item.relatedProjects || [])).size;
+
+const stats = [
+	{ label: "Skills", value: String(skills.length) },
+	{ label: "Advanced+", value: String(advancedSkills.length) },
+	{ label: "Avg Score", value: `${avgScore}` },
+	{ label: "Experience Years", value: totalYears },
+	{ label: "Linked Projects", value: String(relatedProjectCount) },
+];
+
+const levelText: Record<string, string> = {
+	beginner: "Beginner",
+	intermediate: "Intermediate",
+	advanced: "Advanced",
+	expert: "Expert",
+};
+---
+
+<MainGridLayout title={skillsConfig.title} description={skillsConfig.subtitle}>
+	<section class="space-y-6">
+		<div class="card-base px-6 py-6 md:px-8">
+			<div class="mb-2 text-[0.75rem] font-semibold uppercase tracking-[0.18em] text-[var(--primary)]">Project</div>
+			<h1 class="text-3xl font-bold text-90 md:text-4xl">{skillsConfig.title}</h1>
+			<p class="mt-3 max-w-3xl text-sm text-50 md:text-base">{skillsConfig.subtitle}</p>
+		</div>
+
+		<div class="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+			{stats.map((item) => (
+				<div class="card-base rounded-[1.2rem] px-5 py-4">
+					<div class="text-3xl font-bold text-90">{item.value}</div>
+					<div class="mt-1 text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-50">{item.label}</div>
+				</div>
+			))}
+		</div>
+
+		{advancedSkills.length > 0 && (
+			<section class="space-y-4">
+				<div class="px-1 text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-[var(--primary)]">Application-Ready Strengths</div>
+				<div class="grid gap-4 xl:grid-cols-2">
+					{advancedSkills.map((skill) => (
+						<article class="card-base px-5 py-5 md:px-6">
+							<div class="flex items-start gap-4">
+								<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-[1rem] bg-[var(--btn-regular-bg)]">
+									{skill.icon ? (
+										<Icon name={skill.icon} class="text-[1.35rem] text-[var(--primary)]" />
+									) : (
+										<span class="text-lg font-bold text-[var(--primary)]">{skill.name.charAt(0)}</span>
+									)}
+								</div>
+								<div class="min-w-0 flex-1">
+									<div class="flex items-start justify-between gap-3">
+										<div>
+											<h2 class="text-xl font-bold text-90">{skill.name}</h2>
+											<div class="mt-1 text-sm text-50">{skill.category}</div>
+										</div>
+										<div class="rounded-full bg-[var(--btn-regular-bg)] px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-[var(--primary)]">
+											{levelText[skill.level]}
+										</div>
+									</div>
+									<p class="mt-3 text-sm leading-7 text-50">{skill.description}</p>
+									<div class="mt-4">
+										<div class="mb-1 flex items-center justify-between text-xs text-50">
+											<span>Capability Score</span>
+											<span>{skill.score}/100</span>
+										</div>
+										<div class="h-2 rounded-full bg-[var(--btn-regular-bg)]">
+											<div class="h-full rounded-full bg-[var(--primary)]" style={`width: ${skill.score}%`}></div>
+										</div>
+									</div>
+									<div class="mt-4 grid gap-2 sm:grid-cols-2">
+										<div class="rounded-[0.95rem] bg-[var(--btn-regular-bg)] px-3 py-2.5">
+											<div class="text-sm font-semibold text-90">{skill.experience.years}y {skill.experience.months}m</div>
+											<div class="text-[0.68rem] uppercase tracking-[0.12em] text-50">Experience</div>
+										</div>
+										<div class="rounded-[0.95rem] bg-[var(--btn-regular-bg)] px-3 py-2.5">
+											<div class="text-sm font-semibold text-90">{(skill.relatedProjects || []).length}</div>
+											<div class="text-[0.68rem] uppercase tracking-[0.12em] text-50">Related Projects</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</article>
+					))}
+				</div>
+			</section>
+		)}
+
+		<div class="space-y-6">
+			{categories.map((category) => (
+				<section class="space-y-3">
+					<div class="px-1 text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-[var(--primary)]">{category}</div>
+					<div class="grid gap-4 xl:grid-cols-2">
+						{skills.filter((item) => item.category === category).map((skill) => (
+							<article class="card-base px-5 py-5 md:px-6">
+								<div class="flex items-start gap-4">
+									<div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-[1rem] bg-[var(--btn-regular-bg)]">
+										{skill.icon ? (
+											<Icon name={skill.icon} class="text-[1.2rem] text-[var(--primary)]" />
+										) : (
+											<span class="text-base font-bold text-[var(--primary)]">{skill.name.charAt(0)}</span>
+										)}
+									</div>
+									<div class="min-w-0 flex-1">
+										<div class="flex items-start justify-between gap-3">
+											<h2 class="text-lg font-bold text-90">{skill.name}</h2>
+											<div class="rounded-full bg-[var(--btn-regular-bg)] px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-[var(--primary)]">
+												{levelText[skill.level]}
+											</div>
+										</div>
+										<p class="mt-3 text-sm leading-7 text-50">{skill.description}</p>
+										<div class="mt-4">
+											<div class="mb-1 flex items-center justify-between text-xs text-50">
+												<span>Capability Score</span>
+												<span>{skill.score}/100</span>
+											</div>
+											<div class="h-2 rounded-full bg-[var(--btn-regular-bg)]">
+												<div class="h-full rounded-full bg-[var(--primary)]" style={`width: ${skill.score}%`}></div>
+											</div>
+										</div>
+										{skill.proofs && skill.proofs.length > 0 && (
+											<div class="mt-4 grid gap-2 sm:grid-cols-2">
+												{skill.proofs.map((proof) => (
+													<div class="rounded-[0.95rem] bg-[var(--btn-regular-bg)] px-3 py-2.5">
+														<div class="text-sm font-semibold text-90">{proof.value}</div>
+														<div class="text-[0.68rem] uppercase tracking-[0.12em] text-50">{proof.label}</div>
+													</div>
+												))}
+											</div>
+										)}
+										{skill.certifications && skill.certifications.length > 0 && (
+											<div class="mt-4 flex flex-wrap gap-2">
+												{skill.certifications.map((cert) => (
+													<span class="rounded-full bg-[rgba(96,165,250,0.15)] px-2.5 py-1 text-[0.72rem] font-medium text-[rgb(147,197,253)]">{cert}</span>
+												))}
+											</div>
+										)}
+										{skill.relatedProjects && skill.relatedProjects.length > 0 && (
+											<div class="mt-4 text-sm text-50">
+												<span class="font-semibold text-75">Related:</span> {skill.relatedProjects.join(", ")}
+											</div>
+										)}
+									</div>
+								</div>
+							</article>
+						))}
+					</div>
+				</section>
+			))}
+		</div>
+	</section>
+</MainGridLayout>

@@ -10,6 +10,9 @@ import { animeSectionConfig } from "./components/my_config/anime";
 import { gallerySectionConfig } from "./components/my_config/gallery";
 import { diarySectionConfig } from "./components/my_config/diary";
 import { devicesSectionConfig } from "./components/my_config/devices";
+import { projectsPageConfig } from "./components/project_config/projects";
+import { timelinePageConfig } from "./components/project_config/timeline";
+import { skillsPageConfig } from "./components/project_config/skills";
 
 export const siteConfig: SiteConfig = {
 	title: "九重樱叶",
@@ -69,6 +72,13 @@ export const siteConfig: SiteConfig = {
 		diary: diarySectionConfig,
 		devices: devicesSectionConfig,
 	},
+	projectSection: {
+		enable: true, // Enable the grouped "Project" navigation for portfolio-focused pages
+		navLabel: "Project", // Label shown in the desktop dropdown and mobile navigation panel
+		projects: projectsPageConfig,
+		timeline: timelinePageConfig,
+		skills: skillsPageConfig,
+	},
 };
 
 export const navBarConfig: NavBarConfig = {
@@ -91,6 +101,21 @@ export const navBarConfig: NavBarConfig = {
 					: []),
 				...(siteConfig.mySection.devices.enable
 					? [{ name: siteConfig.mySection.devices.navLabel, url: siteConfig.mySection.devices.slug }]
+					: []),
+			],
+		},
+		{
+			name: siteConfig.projectSection.navLabel,
+			url: siteConfig.projectSection.projects.slug,
+			children: [
+				...(siteConfig.projectSection.projects.enable
+					? [{ name: siteConfig.projectSection.projects.navLabel, url: siteConfig.projectSection.projects.slug }]
+					: []),
+				...(siteConfig.projectSection.timeline.enable
+					? [{ name: siteConfig.projectSection.timeline.navLabel, url: siteConfig.projectSection.timeline.slug }]
+					: []),
+				...(siteConfig.projectSection.skills.enable
+					? [{ name: siteConfig.projectSection.skills.navLabel, url: siteConfig.projectSection.skills.slug }]
 					: []),
 			],
 		},

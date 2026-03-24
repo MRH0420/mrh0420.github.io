@@ -1,0 +1,167 @@
+---
+import { siteConfig } from "@/config";
+import MainGridLayout from "@/layouts/MainGridLayout.astro";
+import { Icon } from "astro-icon/components";
+
+const timelineConfig = siteConfig.projectSection.timeline;
+if (!siteConfig.projectSection.enable || !timelineConfig.enable) {
+	return Astro.redirect("/");
+}
+
+const entries = timelineConfig.entries
+	.map((item) => ({
+		...item,
+		start: new Date(item.startDate),
+		end: item.endDate ? new Date(item.endDate) : undefined,
+	}))
+	.sort((a, b) => b.start.getTime() - a.start.getTime());
+
+const currentItems = entries.filter((item) => !item.endDate || item.featured);
+const yearsSpan = (() => {
+	if (entries.length === 0) return "0";
+	const first = Math.min(...entries.map((item) => item.start.getTime()));
+	const years = (Date.now() - first) / (1000 * 60 * 60 * 24 * 365);
+	return years.toFixed(1);
+})();
+
+const stats = [
+	{ label: "Milestones", value: String(entries.length) },
+	{ label: "Projects", value: String(entries.filter((item) => item.type === "project").length) },
+	{ label: "Achievements", value: String(entries.filter((item) => item.type === "achievement").length) },
+	{ label: "Growth Years", value: yearsSpan },
+];
+
+const typeLabel: Record<string, string> = {
+	education: "Education",
+	project: "Project",
+	achievement: "Achievement",
+	research: "Research",
+	leadership: "Leadership",
+};
+
+const typeIcon: Record<string, string> = {
+	education: "material-symbols:school-outline-rounded",
+	project: "material-symbols:code-blocks-outline-rounded",
+	achievement: "fa6-solid:trophy",
+	research: "material-symbols:biotech-outline-rounded",
+	leadership: "fa6-solid:people-group",
+};
+
+const formatDate = (date: Date) =>
+	date.toLocaleDateString("en-US", { year: "numeric", month: "short" });
+---
+
+<MainGridLayout title={timelineConfig.title} description={timelineConfig.subtitle}>
+	<section class="space-y-6">
+		<div class="card-base px-6 py-6 md:px-8">
+			<div class="mb-2 text-[0.75rem] font-semibold uppercase tracking-[0.18em] text-[var(--primary)]">Project</div>
+			<h1 class="text-3xl font-bold text-90 md:text-4xl">{timelineConfig.title}</h1>
+			<p class="mt-3 max-w-3xl text-sm text-50 md:text-base">{timelineConfig.subtitle}</p>
+		</div>
+
+		<div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+			{stats.map((item) => (
+				<div class="card-base rounded-[1.2rem] px-5 py-4">
+					<div class="text-3xl font-bold text-90">{item.value}</div>
+					<div class="mt-1 text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-50">{item.label}</div>
+				</div>
+			))}
+		</div>
+
+		{currentItems.length > 0 && (
+			<section class="space-y-4">
+				<div class="px-1 text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-[var(--primary)]">Current Focus</div>
+				<div class="grid gap-4 xl:grid-cols-2">
+					{currentItems.slice(0, 4).map((item) => (
+						<article class="card-base px-5 py-5 md:px-6">
+							<div class="flex items-start gap-4">
+								<div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-[1rem] bg-[var(--btn-regular-bg)] text-[var(--primary)]">
+									<Icon name={typeIcon[item.type]} class="text-[1.25rem]" />
+								</div>
+								<div class="min-w-0 flex-1">
+									<div class="flex items-start justify-between gap-3">
+										<div>
+											<h2 class="text-xl font-bold text-90">{item.title}</h2>
+											<div class="mt-1 text-sm text-50">{item.organization || typeLabel[item.type]}</div>
+										</div>
+										<div class="rounded-full bg-[var(--btn-regular-bg)] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-[var(--primary)]">
+											{typeLabel[item.type]}
+										</div>
+									</div>
+									<p class="mt-3 text-sm leading-7 text-50">{item.description}</p>
+								</div>
+							</div>
+						</article>
+					))}
+				</div>
+			</section>
+		)}
+
+		<section class="space-y-4">
+			<div class="px-1 text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-[var(--primary)]">Timeline</div>
+			<div class="space-y-4">
+				{entries.map((item, index) => (
+					<article class="relative card-base px-5 py-5 md:px-6">
+						<div class="flex items-start gap-4">
+							<div class="relative flex flex-col items-center">
+								<div class="flex h-11 w-11 items-center justify-center rounded-[1rem] bg-[var(--btn-regular-bg)] text-[var(--primary)]">
+									<Icon name={typeIcon[item.type]} class="text-[1.2rem]" />
+								</div>
+								{index !== entries.length - 1 && <div class="mt-3 h-full min-h-[3rem] w-px bg-[rgba(148,163,184,0.18)]"></div>}
+							</div>
+							<div class="min-w-0 flex-1">
+								<div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+									<div>
+										<div class="mb-2 text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-50">
+											{formatDate(item.start)} - {item.end ? formatDate(item.end) : "Present"}
+										</div>
+										<h2 class="text-xl font-bold text-90">
+											{item.title}
+											{item.featured && <span class="ml-2 text-[var(--primary)]">★</span>}
+										</h2>
+										<div class="mt-1 text-sm text-50">
+											{item.organization || typeLabel[item.type]}
+											{item.role && ` • ${item.role}`}
+											{item.location && ` • ${item.location}`}
+										</div>
+									</div>
+									<div class="rounded-full bg-[var(--btn-regular-bg)] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-[var(--primary)]">
+										{typeLabel[item.type]}
+									</div>
+								</div>
+								<p class="mt-4 text-sm leading-7 text-50">{item.description}</p>
+								{item.highlights && item.highlights.length > 0 && (
+									<div class="mt-4 space-y-2">
+										{item.highlights.map((highlight) => (
+											<div class="flex items-start gap-2 text-sm text-75">
+												<Icon name="material-symbols:check-circle-outline-rounded" class="mt-[0.1rem] text-[1rem] text-[var(--primary)]" />
+												<span>{highlight}</span>
+											</div>
+										))}
+									</div>
+								)}
+								{item.skills && item.skills.length > 0 && (
+									<div class="mt-4 flex flex-wrap gap-2">
+										{item.skills.map((skill) => (
+											<span class="rounded-full bg-[var(--btn-regular-bg)] px-2.5 py-1 text-[0.72rem] font-medium text-[var(--btn-content)]">{skill}</span>
+										))}
+									</div>
+								)}
+								{item.links && item.links.length > 0 && (
+									<div class="mt-4 flex flex-wrap gap-3">
+										{item.links.map((link) => (
+											<a href={link.url} target="_blank" rel="noopener" class="inline-flex items-center gap-2 text-sm font-semibold text-[var(--primary)] hover:text-[var(--link-hover)]">
+												{link.label}
+												<Icon name="fa6-solid:arrow-up-right-from-square" class="text-[0.75rem]" />
+											</a>
+										))}
+									</div>
+								)}
+							</div>
+						</div>
+					</article>
+				))}
+			</div>
+		</section>
+	</section>
+</MainGridLayout>

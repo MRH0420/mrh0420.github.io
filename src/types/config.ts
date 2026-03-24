@@ -56,6 +56,7 @@ export type SiteConfig = {
 		excludeSelectors: string[];
 	};
 	mySection: MySectionConfig;
+	projectSection: ProjectSectionConfig;
 };
 
 export type Favicon = {
@@ -211,6 +212,95 @@ export type MyFeaturePageConfig = {
 	navLabel: string;
 	title: string;
 	subtitle: string;
+};
+
+export type PortfolioMetric = {
+	label: string;
+	value: string;
+};
+
+export type PortfolioLink = {
+	label: string;
+	url: string;
+};
+
+export type PortfolioProjectItem = {
+	id: string;
+	title: string;
+	summary: string;
+	category: string;
+	status: "completed" | "in_progress" | "research" | "shipped";
+	period: string;
+	cover?: string;
+	stack: string[];
+	featured?: boolean;
+	metrics: PortfolioMetric[];
+	highlights?: string[];
+	awards?: string[];
+	links?: PortfolioLink[];
+};
+
+export type PortfolioCompetitionResult = {
+	title: string;
+	year: string;
+	result: string;
+	scope: string;
+};
+
+export type PortfolioSkillLevel =
+	| "beginner"
+	| "intermediate"
+	| "advanced"
+	| "expert";
+
+export type PortfolioSkillItem = {
+	id: string;
+	name: string;
+	category: string;
+	description: string;
+	level: PortfolioSkillLevel;
+	score: number;
+	icon?: string;
+	color?: string;
+	experience: {
+		years: number;
+		months: number;
+	};
+	relatedProjects?: string[];
+	certifications?: string[];
+	proofs?: PortfolioMetric[];
+};
+
+export type PortfolioTimelineItem = {
+	id: string;
+	title: string;
+	type: "education" | "project" | "achievement" | "research" | "leadership";
+	startDate: string;
+	endDate?: string;
+	location?: string;
+	organization?: string;
+	role?: string;
+	description: string;
+	highlights?: string[];
+	skills?: string[];
+	links?: PortfolioLink[];
+	featured?: boolean;
+	color?: string;
+};
+
+export type ProjectSectionConfig = {
+	enable: boolean;
+	navLabel: string;
+	projects: MyFeaturePageConfig & {
+		items: PortfolioProjectItem[];
+		competitionResults: PortfolioCompetitionResult[];
+	};
+	timeline: MyFeaturePageConfig & {
+		entries: PortfolioTimelineItem[];
+	};
+	skills: MyFeaturePageConfig & {
+		items: PortfolioSkillItem[];
+	};
 };
 
 export type MySectionConfig = {

@@ -95,6 +95,8 @@ const search = async (keyword: string, isDesktop: boolean): Promise<void> => {
 };
 
 onMount(() => {
+	document.dispatchEvent(new CustomEvent("search-ready"));
+
 	const initializeSearch = () => {
 		initialized = true;
 		pagefindLoaded =

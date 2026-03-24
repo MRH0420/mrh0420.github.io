@@ -104,8 +104,16 @@ const currentPath = Astro.url.pathname;
             })}
         </div>
         <div class="flex items-center gap-1">
-            <!--<SearchPanel client:load>-->
-            <Search client:only="svelte"></Search>
+            <div class="relative search-slot">
+                <div id="search-placeholder" class="search-placeholder" aria-hidden="true">
+                    <div class="search-placeholder-desktop hidden lg:flex">
+                        <div class="search-placeholder-icon"></div>
+                        <div class="search-placeholder-line"></div>
+                    </div>
+                    <div class="search-placeholder-mobile lg:hidden"></div>
+                </div>
+                <Search client:only="svelte"></Search>
+            </div>
             {!siteConfig.themeColor.fixed && (
                     <button type="button" aria-label="Display Settings" aria-haspopup="dialog" aria-controls="display-setting" aria-expanded="false" class="btn-plain scale-animation rounded-xl h-11 w-11 active:scale-90" id="display-settings-switch">
                         <Icon name="material-symbols:palette-outline" class="text-[1.25rem]"></Icon>
@@ -202,10 +210,68 @@ function loadButtonScript() {
     }
 }
 
+function syncSearchPlaceholder() {
+    const placeholder = document.getElementById("search-placeholder");
+    if (placeholder) {
+        placeholder.classList.add("search-placeholder-hidden");
+    }
+}
+
 loadButtonScript();
 loadNavScript();
 syncNavStateWithLocation();
+document.addEventListener("search-ready", syncSearchPlaceholder);
+syncSearchPlaceholder();
 </script>
+
+<style is:global>
+.search-slot {
+    @apply relative flex items-center h-11 w-11 lg:w-[11rem] md:lg:w-[12rem];
+}
+
+.search-placeholder {
+    @apply absolute inset-0 z-0 pointer-events-none transition-opacity duration-300;
+}
+
+.search-placeholder-hidden {
+    @apply opacity-0;
+}
+
+.search-placeholder-desktop {
+    @apply items-center h-11 mr-2 rounded-lg border border-[rgba(148,163,184,0.12)] px-3 gap-3 w-[11rem] md:w-[12rem];
+    background:
+        linear-gradient(120deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.09) 18%, rgba(255,255,255,0.03) 36%),
+        linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.02) 100%);
+    background-size: 220% 100%, 100% 100%;
+    animation: search-placeholder-shimmer 2.2s ease-in-out infinite;
+}
+
+.search-placeholder-mobile {
+    @apply h-11 w-11 rounded-xl border border-[rgba(148,163,184,0.12)];
+    background:
+        linear-gradient(120deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.09) 18%, rgba(255,255,255,0.03) 36%),
+        linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.02) 100%);
+    background-size: 220% 100%, 100% 100%;
+    animation: search-placeholder-shimmer 2.2s ease-in-out infinite;
+}
+
+.search-placeholder-icon {
+    @apply h-4 w-4 rounded-full bg-white/10 shrink-0;
+}
+
+.search-placeholder-line {
+    @apply h-3 rounded-full bg-white/10 flex-1;
+}
+
+@keyframes search-placeholder-shimmer {
+    0% {
+        background-position: 100% 0, 0 0;
+    }
+    100% {
+        background-position: -120% 0, 0 0;
+    }
+}
+</style>
 
 {import.meta.env.PROD && <script is:inline define:vars={{scriptUrl: url('/pagefind/pagefind.js')}}>
 async function loadPagefind() {
